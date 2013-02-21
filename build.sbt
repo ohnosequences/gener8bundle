@@ -16,7 +16,7 @@ version := "0.1.0"
 
 scalaVersion := "2.10.0"
 
-scalaBinaryVersion := "2.10"
+scalaBinaryVersion := "2.10.0"
 
 publishMavenStyle := true
 
@@ -36,7 +36,7 @@ resolvers ++= Seq (
                   )
 
 libraryDependencies ++= Seq (
-                              "com.chuusai" %% "shapeless" % "1.2.3"
+                              "com.chuusai" % "shapeless_2.10" % "1.2.3"
                             )
 
 scalacOptions ++= Seq(
