@@ -1,8 +1,10 @@
 
 import sbtrelease._
 import ReleaseStateTransformations._
-
+import com.typesafe.sbt.SbtStartScript
 import gener8bundleBuild._
+
+seq(SbtStartScript.startScriptForClassesSettings: _*)
 
 name := "gener8bundle"
 
