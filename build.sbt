@@ -12,8 +12,6 @@ version := "0.1.0"
 
 scalaVersion := "2.10.0"
 
-// crossScalaVersions := Seq("2.10.0.RC1", "2.10.0.RC2")
-
 publishMavenStyle := true
 
 publishTo <<= version { (v: String) =>
@@ -33,6 +31,9 @@ resolvers ++= Seq (
 
 libraryDependencies ++= Seq (
                               "com.chuusai" %% "shapeless" % "1.2.3"
+                            , "net.databinder.giter8" % "giter8_2.9.1" % "0.5.3"
+                            , "org.scala-sbt" % "launcher-interface" % "0.12.1"
+                            // , "org.eclipse.jgit" % "org.eclipse.jgit" % "1.3.0.201202151440-r"
                             )
 
 scalacOptions ++= Seq(

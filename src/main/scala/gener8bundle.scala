@@ -2,12 +2,16 @@ package ohnosequences.statica.gener8bundle
 
 // This script parses given json bundle configuration,
 // constructs parameters for giter8 and calls it
+import scala.Either._
 
 object Transformations {
 
+  // import giter8.G8._
+  def decapitalize(s: String) = if (s.isEmpty) s else s(0).toLower + s.substring(1)
   def startCase(s: String) = s.toLowerCase.split(" ").map(_.capitalize).mkString(" ")
   def wordOnly(s: String) = s.replaceAll("""\W""", "")
   def upperCamel(s: String) = wordOnly(startCase(s))
+  def lowerCamel(s: String) = decapitalize(upperCamel(s))
   def hyphenate(s: String) = s.replaceAll("""\s+""", "-")
   def normalize(s: String) = hyphenate(s.toLowerCase)
 
@@ -45,6 +49,7 @@ object Gener8Bundle extends App {
   import scala.io.Source
   import scala.util.parsing.json.JSON._
   import Transformations._
+  import giter8.Giter8
 
   override def main(args: Array[String]) {
 
@@ -60,10 +65,14 @@ object Gener8Bundle extends App {
           case NoSuccess(msg, _) => println("JSON parsing error: \n\t" + msg)
           case Success(m, _) => {
             val conf = resolveType(m).asInstanceOf[Map[String, Any]]
-            val g8cmd = "g8" +: template +: g8Args(conf)
+            val g8cmd = template +: g8Args(conf)
 
             println(g8cmd)
-            g8cmd.!
+
+            // val tmpl = clone("git://github.com/ohnosequences/statica-bundle.g8.git", None)
+            // tmpl.right.flatMap(G8Helpers.applyTemplate(_, new File("."), g8Args(conf)))
+            Giter8.ghInspect("ohnosequences", "statica-bundle", None, g8Args(conf))
+            // Giter8.run(g8cmd.toArray)
           }
         }
       }
