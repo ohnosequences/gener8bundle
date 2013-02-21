@@ -39,34 +39,55 @@ object Transformations {
   }
 }
 
-object Gener8Bundle extends App {
+/** The launched conscript entry point */
+class App extends xsbti.AppMain {
+  def run(config: xsbti.AppConfiguration) = {
+    Exit(App.run(config.arguments))
+  }
+}
+
+object App {
 
   import scala.sys.process._
   import scala.io.Source
   import scala.util.parsing.json.JSON._
   import Transformations._
 
-  override def main(args: Array[String]) {
-
-    if(args.length < 2)
-    println("Usage: \n scala gen-bundle.scala <giter8 template address> <config_1.json> [... <config_n.json>]")
+  /** Shared by the launched version and the runnable version,
+   * returns the process status code */
+  def run(args: Array[String]): Int = {
+    if(args.length < 2) {
+      println("Usage: \n scala gen-bundle.scala <giter8 template address> <config_1.json> [... <config_n.json>]")
+      1
+    }
     else {
       val template = args(0)
 
-      for (file <- args.tail) {
+      args.tail.foldLeft(0){ (result, file) =>
         val jsonConf: String = Source.fromFile(file).mkString
 
         jsonObj(new lexical.Scanner(jsonConf)) match {
-          case NoSuccess(msg, _) => println("JSON parsing error: \n\t" + msg)
+          case NoSuccess(msg, _) => {
+            println("JSON parsing error: \n\t" + msg)
+            0
+          }
           case Success(m, _) => {
             val conf = resolveType(m).asInstanceOf[Map[String, Any]]
             val g8cmd = "g8" +: template +: g8Args(conf)
 
             println(g8cmd)
-            g8cmd.!
+            val r = g8cmd.!
+            if (r == 0) result else r
           }
         }
       }
     }
   }
+
+  /** Standard runnable class entrypoint */
+  def main(args: Array[String]) {
+    System.exit(run(args))
+  }
 }
+
+case class Exit(val code: Int) extends xsbti.Exit

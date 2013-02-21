@@ -6,6 +6,8 @@ import gener8bundleBuild._
 
 seq(SbtStartScript.startScriptForClassesSettings: _*)
 
+seq(conscriptSettings :_*)
+
 name := "gener8bundle"
 
 organization := "ohnosequences"
@@ -13,8 +15,6 @@ organization := "ohnosequences"
 version := "0.1.0"
 
 scalaVersion := "2.10.0"
-
-// crossScalaVersions := Seq("2.10.0.RC1", "2.10.0.RC2")
 
 publishMavenStyle := true
 
