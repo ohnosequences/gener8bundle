@@ -16,6 +16,8 @@ version := "0.1.0"
 
 scalaVersion := "2.10.0"
 
+scalaBinaryVersion := "2.10"
+
 publishMavenStyle := true
 
 publishTo <<= version { (v: String) =>
