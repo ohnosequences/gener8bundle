@@ -2,7 +2,6 @@ package ohnosequences.statica.gener8bundle
 
 // This script parses given json bundle configuration,
 // constructs parameters for giter8 and calls it
-import scala.Either._
 
 object Transformations {
 
@@ -69,10 +68,7 @@ object Gener8Bundle extends App {
 
             println(g8cmd)
 
-            // val tmpl = clone("git://github.com/ohnosequences/statica-bundle.g8.git", None)
-            // tmpl.right.flatMap(G8Helpers.applyTemplate(_, new File("."), g8Args(conf)))
-            Giter8.ghInspect("ohnosequences", "statica-bundle", None, g8Args(conf))
-            // Giter8.run(g8cmd.toArray)
+            Giter8.run(g8cmd.toArray)
           }
         }
       }

@@ -10,7 +10,7 @@ organization := "ohnosequences"
 
 version := "0.1.0"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.9.1"
 
 publishMavenStyle := true
 
@@ -30,16 +30,11 @@ resolvers ++= Seq (
                   )
 
 libraryDependencies ++= Seq (
-                              "com.chuusai" %% "shapeless" % "1.2.3"
-                            , "net.databinder.giter8" % "giter8_2.9.1" % "0.5.3"
-                            , "org.scala-sbt" % "launcher-interface" % "0.12.1"
-                            // , "org.eclipse.jgit" % "org.eclipse.jgit" % "1.3.0.201202151440-r"
+                              "net.databinder.giter8" % "giter8_2.9.1" % "0.5.3"
+                            , "org.scala-sbt" % "launcher-interface" % "0.12.2"
                             )
 
 scalacOptions ++= Seq(
-                      "-feature",
-                      "-language:higherKinds",
-                      "-language:implicitConversions",
                       "-deprecation",
                       "-unchecked"
                     )
