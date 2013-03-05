@@ -25,18 +25,31 @@ object Transformations {
   else l.map(normalize).map(
       "\"ohnosequences\" %% \"" + _ + "\" % \"0.1.0-SNAPSHOT\"" // TODO: use actual version
       ).mkString("libraryDependencies ++= Seq(", ", ", ")")
+}
 
-  def g8Args(m: Map[String, Any]): Seq[String] = {
-    val conf = if (! m.contains("dependencies")) m
-    else {
-      val d = m("dependencies").asInstanceOf[List[String]]
-      (m - "dependencies"
-       ++ List(("depsSbt", depsSbt(d))
-        ,("depsImport", depsImport(d))
-        ,("depsHList", depsHList(d))))
-    }
-    conf.toSeq map {case (k,v) => "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")}
+case class BundleDescription(
+    name: String
+  , version: Option[String]
+  , dependencies: List[String]
+  ) {
+  def toSeq: Seq[String] = {
+    def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
+    def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
+
+    import Transformations._
+
+    (Seq(("name", name)) ++ opt("version", version) ++
+      ( if (dependencies.isEmpty) Seq()
+        else Seq(("depsSbt", depsSbt(dependencies)),
+                 ("depsImport", depsImport(dependencies)),
+                 ("depsHList", depsHList(dependencies)))
+      )
+    ) map {case (k,v) => format(k,v)}
   }
+}
+
+object BundleJsonProtocol extends spray.json.DefaultJsonProtocol {
+  implicit val bundleFormat = jsonFormat3(BundleDescription)
 }
 
 /** The launched conscript entry point */
@@ -52,34 +65,32 @@ object App {
   import scala.io.Source
   import scala.util.parsing.json.JSON._
   import Transformations._
+  import spray.json._
+  import BundleJsonProtocol._
+
 
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
     if(args.length < 2) {
-      println("Usage: \n scala gen-bundle.scala <giter8 template address> <config_1.json> [... <config_n.json>]")
+      println("Usage: gener8bundle <giter8 template address> <config_1.json> [... <config_n.json>]")
       1
     }
     else {
-      val template = args(0)
+      val template = if (args(0) == "-") "ohnosequences/statica-bundle" else args(0)
 
       args.tail.foldLeft(0){ (result, file) =>
-        val jsonConf: String = Source.fromFile(file).mkString
+        // reading json
+        val jsonConf = Source.fromFile(file).mkString.asJson
+        // parsing it
+        val conf = jsonConf.convertTo[BundleDescription]
+        // constructing g8 command with arguments
+        val g8cmd = "g8" +: template +: conf.toSeq
 
-        jsonObj(new lexical.Scanner(jsonConf)) match {
-          case NoSuccess(msg, _) => {
-            println("JSON parsing error: \n\t" + msg)
-            0
-          }
-          case Success(m, _) => {
-            val conf = resolveType(m).asInstanceOf[Map[String, Any]]
-            val g8cmd = "g8" +: template +: g8Args(conf)
-
-            println(g8cmd)
-            val r = g8cmd.!
-            if (r == 0) result else r
-          }
-        }
+        println(g8cmd)
+        // running it
+        val r = g8cmd.!
+        if (r == 0) result else r
       }
     }
   }
