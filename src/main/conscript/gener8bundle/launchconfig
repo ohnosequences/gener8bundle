@@ -1,5 +1,5 @@
 [app]
-  version: 0.3.0
+  version: 0.3.1
   org: ohnosequences
   name: gener8bundle
   class: ohnosequences.statica.gener8bundle.App
@@ -7,6 +7,7 @@
   version: 2.9.1
 [repositories]
   local
+  typesafe-release: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).xml, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]
   sonatype-oss-releases: https://oss.sonatype.org/content/repositories/releases/
   maven-central
   era7-releases: http://releases.era7.com.s3.amazonaws.com
