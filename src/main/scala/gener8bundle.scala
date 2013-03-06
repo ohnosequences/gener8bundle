@@ -5,14 +5,7 @@ package ohnosequences.statica.gener8bundle
 
 object Transformations {
 
-  // import giter8.G8._
-  def decapitalize(s: String) = if (s.isEmpty) s else s(0).toLower + s.substring(1)
-  def startCase(s: String) = s.toLowerCase.split(" ").map(_.capitalize).mkString(" ")
-  def wordOnly(s: String) = s.replaceAll("""\W""", "")
-  def upperCamel(s: String) = wordOnly(startCase(s))
-  def lowerCamel(s: String) = decapitalize(upperCamel(s))
-  def hyphenate(s: String) = s.replaceAll("""\s+""", "-")
-  def normalize(s: String) = hyphenate(s.toLowerCase)
+  import giter8.G8._
 
   def depsImport(l: List[String]): String = 
   if (l.isEmpty) " "
