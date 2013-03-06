@@ -12,7 +12,7 @@ name := "gener8bundle"
 
 organization := "ohnosequences"
 
-version := "0.2.0"
+version := "0.3.0"
 
 scalaVersion := "2.9.1"
 
@@ -37,6 +37,8 @@ resolvers ++= Seq (
 
 libraryDependencies ++= Seq (
                               "org.json4s" %% "json4s-native" % "3.1.0"
+                            , "net.databinder.giter8" %% "giter8" % "0.5.3"
+                            , "org.scala-sbt" % "launcher-interface" % "0.12.2"
                             )
 
 scalacOptions ++= Seq(

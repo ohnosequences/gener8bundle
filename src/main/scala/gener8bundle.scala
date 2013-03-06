@@ -3,13 +3,16 @@ package ohnosequences.statica.gener8bundle
 // This script parses given json bundle configuration,
 // constructs parameters for giter8 and calls it
 
-object Transformations {
+case class BundleDescription(
+    name: String
+  , version: Option[String]
+  , description: Option[String]
+  , org: Option[String]
+  , scala_version: Option[String]
+  , dependencies: List[String]
+  ) {
 
-  def startCase(s: String) = s.toLowerCase.split(" ").map(_.capitalize).mkString(" ")
-  def wordOnly(s: String) = s.replaceAll("""\W""", "")
-  def upperCamel(s: String) = wordOnly(startCase(s))
-  def hyphenate(s: String) = s.replaceAll("""\s+""", "-")
-  def normalize(s: String) = hyphenate(s.toLowerCase)
+  import giter8.G8._
 
   def depsImport(l: List[String]): String = 
   if (l.isEmpty) " "
@@ -25,21 +28,10 @@ object Transformations {
   else l.map(normalize).map(
       "\"ohnosequences\" %% \"" + _ + "\" % \"0.1.0-SNAPSHOT\"" // TODO: use actual version
       ).mkString("libraryDependencies ++= Seq(", ", ", ")")
-}
 
-case class BundleDescription(
-    name: String
-  , version: Option[String]
-  , description: Option[String]
-  , org: Option[String]
-  , scala_version: Option[String]
-  , dependencies: List[String]
-  ) {
   def toSeq: Seq[String] = {
     def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
     def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
-
-    import Transformations._
 
     (Seq(("name", name)) ++ 
      opt("version", version) ++
@@ -66,9 +58,9 @@ object App {
 
   import scala.sys.process._
   import scala.io.Source
-  import Transformations._
   import org.json4s._
   import org.json4s.native.JsonMethods._
+  import giter8.Giter8
 
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
@@ -85,15 +77,12 @@ object App {
         val jsonConf = parse(Source.fromFile(file).mkString)
         // parsing it
         implicit val formats = DefaultFormats
-        println(jsonConf.extract[BundleDescription])
-        // return 0
         val conf = jsonConf.extract[BundleDescription]
         // constructing g8 command with arguments
-        val g8cmd = "g8" +: template +: conf.toSeq
-
-        println(g8cmd)
+        val g8cmd = template +: conf.toSeq
+        println("g8 " + g8cmd.mkString(" "))
         // running it
-        val r = g8cmd.!
+        val r = Giter8.run(g8cmd.toArray)
         if (r == 0) result else r
       }
     }
