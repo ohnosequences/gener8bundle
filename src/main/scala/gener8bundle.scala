@@ -30,6 +30,9 @@ object Transformations {
 case class BundleDescription(
     name: String
   , version: Option[String]
+  , description: Option[String]
+  , org: Option[String]
+  , scala_version: Option[String]
   , dependencies: List[String]
   ) {
   def toSeq: Seq[String] = {
@@ -38,7 +41,11 @@ case class BundleDescription(
 
     import Transformations._
 
-    (Seq(("name", name)) ++ opt("version", version) ++
+    (Seq(("name", name)) ++ 
+     opt("version", version) ++
+     opt("description", description) ++
+     opt("org", org) ++
+     opt("scala_version", scala_version) ++
       ( if (dependencies.isEmpty) Seq()
         else Seq(("depsSbt", depsSbt(dependencies)),
                  ("depsImport", depsImport(dependencies)),
@@ -46,10 +53,6 @@ case class BundleDescription(
       )
     ) map {case (k,v) => format(k,v)}
   }
-}
-
-object BundleJsonProtocol extends spray.json.DefaultJsonProtocol {
-  implicit val bundleFormat = jsonFormat3(BundleDescription)
 }
 
 /** The launched conscript entry point */
@@ -63,27 +66,28 @@ object App {
 
   import scala.sys.process._
   import scala.io.Source
-  import scala.util.parsing.json.JSON._
   import Transformations._
-  import spray.json._
-  import BundleJsonProtocol._
-
+  import org.json4s._
+  import org.json4s.native.JsonMethods._
 
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
     if(args.length < 2) {
       println("Usage: gener8bundle <giter8 template address> <config_1.json> [... <config_n.json>]")
-      1
+      return 1
     }
     else {
       val template = if (args(0) == "-") "ohnosequences/statica-bundle" else args(0)
 
       args.tail.foldLeft(0){ (result, file) =>
-        // reading json
-        val jsonConf = Source.fromFile(file).mkString.asJson
+        // reading and parsing json
+        val jsonConf = parse(Source.fromFile(file).mkString)
         // parsing it
-        val conf = jsonConf.convertTo[BundleDescription]
+        implicit val formats = DefaultFormats
+        println(jsonConf.extract[BundleDescription])
+        // return 0
+        val conf = jsonConf.extract[BundleDescription]
         // constructing g8 command with arguments
         val g8cmd = "g8" +: template +: conf.toSeq
 

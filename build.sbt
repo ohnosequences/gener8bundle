@@ -12,11 +12,11 @@ name := "gener8bundle"
 
 organization := "ohnosequences"
 
-version := "0.1.0"
+version := "0.2.0"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.9.1"
 
-scalaBinaryVersion := "2.10.0"
+// scalaBinaryVersion := "2.10.0"
 
 publishMavenStyle := true
 
@@ -32,18 +32,14 @@ resolvers ++= Seq (
                     "Sonatype Releases"   at "https://oss.sonatype.org/content/repositories/releases",
                     "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots",
                     "Era7 Releases"       at "http://releases.era7.com.s3.amazonaws.com",
-                    "Era7 Snapshots"      at "http://snapshots.era7.com.s3.amazonaws.com",
-                    "Spray"               at "http://repo.spray.io"
+                    "Era7 Snapshots"      at "http://snapshots.era7.com.s3.amazonaws.com"
                   )
 
 libraryDependencies ++= Seq (
-    "io.spray" %  "spray-json_2.10" % "1.2.3"
-  )
+                              "org.json4s" %% "json4s-native" % "3.1.0"
+                            )
 
 scalacOptions ++= Seq(
-                      "-feature",
-                      "-language:higherKinds",
-                      "-language:implicitConversions",
                       "-deprecation",
                       "-unchecked"
                     )
