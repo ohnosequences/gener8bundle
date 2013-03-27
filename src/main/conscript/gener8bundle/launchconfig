@@ -1,5 +1,5 @@
 [app]
-  version: 0.3.2
+  version: 0.3.3
   org: ohnosequences
   name: gener8bundle
   class: ohnosequences.statica.gener8bundle.App
