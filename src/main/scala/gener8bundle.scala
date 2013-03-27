@@ -38,11 +38,9 @@ case class BundleDescription(
      opt("description", description) ++
      opt("org", org) ++
      opt("scala_version", scala_version) ++
-      ( if (dependencies.isEmpty) Seq()
-        else Seq(("depsSbt", depsSbt(dependencies)),
-                 ("depsImport", depsImport(dependencies)),
-                 ("depsHList", depsHList(dependencies)))
-      )
+     Seq( ("depsSbt", depsSbt(dependencies)),
+          ("depsImport", depsImport(dependencies)),
+          ("depsHList", depsHList(dependencies)))
     ) map {case (k,v) => format(k,v)}
   }
 }
