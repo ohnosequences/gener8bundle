@@ -6,6 +6,7 @@ package ohnosequences.statica.gener8bundle
 case class BundleDescription(
     name: String
   , version: Option[String]
+  , tool_version: Option[String]
   , description: Option[String]
   , org: Option[String]
   , scala_version: Option[String]
@@ -35,6 +36,7 @@ case class BundleDescription(
 
     (Seq(("name", name)) ++ 
      opt("version", version) ++
+     opt("tool_version", tool_version) ++
      opt("description", description) ++
      opt("org", org) ++
      opt("scala_version", scala_version) ++
