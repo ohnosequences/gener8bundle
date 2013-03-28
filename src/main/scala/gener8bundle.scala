@@ -36,7 +36,7 @@ case class BundleDescription(
 
     (Seq(("name", name)) ++ 
      opt("version", version) ++
-     opt("tool_version", tool_version) ++
+     opt("tool_version", tool_version.map(_.replaceAll("\\.", "_"))) ++
      opt("description", description) ++
      opt("org", org) ++
      opt("scala_version", scala_version) ++
