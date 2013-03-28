@@ -12,11 +12,9 @@ name := "gener8bundle"
 
 organization := "ohnosequences"
 
-version := "0.3.3"
+version := "0.3.4"
 
 scalaVersion := "2.9.1"
-
-// scalaBinaryVersion := "2.10.0"
 
 publishMavenStyle := true
 
