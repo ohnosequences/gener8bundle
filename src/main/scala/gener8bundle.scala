@@ -3,39 +3,55 @@ package ohnosequences.statica.gener8bundle
 // This script parses given json bundle configuration,
 // constructs parameters for giter8 and calls it
 
-case class BundleDescription(
+case class BundleDependency(
     name: String
-  , version: Option[String]
   , tool_version: Option[String]
-  , description: Option[String]
-  , org: Option[String]
-  , scala_version: Option[String]
-  , dependencies: List[String]
+  , bundle_version: Option[String]
   ) {
 
   import giter8.G8._
 
-  def depsImport(l: List[String]): String = 
-  if (l.isEmpty) " "
-  else l.map(upperCamel).mkString(
-    "import ohnosequences.statica.bundles.{", ", ", "}")
+  val forSbt = "\"ohnosequences\" %% \"" + 
+                  normalize(name) + "\" % \"" + 
+                  bundle_version.getOrElse("0.1.0-SNAPSHOT") + "\""
+  val forImport = upperCamel(name)
+  val forHList = upperCamel(name) + 
+    (tool_version match {
+      case None | Some("latest") => ".latest"
+      case Some(v) => ".v" + v.replaceAll("\\.", "_")
+    })
+}
 
-  def depsHList(l: List[String]): String = 
+case class BundleDescription(
+    name: String
+  , bundle_version: Option[String]
+  , tool_version: Option[String]
+  , description: Option[String]
+  , org: Option[String]
+  , scala_version: Option[String]
+  , dependencies: List[BundleDependency]
+  ) {
+
+  import giter8.G8._
+
+  def depsSbt(l: List[BundleDependency]): String = 
+  if (l.isEmpty) " "
+  else l.map(_.forSbt).mkString("libraryDependencies ++= Seq(", ", ", ")")
+
+  def depsImport(l: List[BundleDependency]): String = 
+  if (l.isEmpty) " "
+  else l.map(_.forImport).mkString("import ohnosequences.statica.bundles.{", ", ", "}")
+
+  def depsHList(l: List[BundleDependency]): String = 
   if (l.isEmpty) "HNil: HNil"
-  else l.map(upperCamel).map(_ + ".Bundle").mkString("flatten(", " :: ", " :: HNil)")
-
-  def depsSbt(l: List[String]): String = 
-  if (l.isEmpty) " "
-  else l.map(normalize).map(
-      "\"ohnosequences\" %% \"" + _ + "\" % \"0.1.0-SNAPSHOT\"" // TODO: use actual version
-      ).mkString("libraryDependencies ++= Seq(", ", ", ")")
+  else l.map(_.forHList).mkString("flatten(", " :: ", " :: HNil)")
 
   def toSeq: Seq[String] = {
     def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
     def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
 
     (Seq(("name", name)) ++ 
-     opt("version", version) ++
+     opt("bundle_version", bundle_version) ++
      opt("tool_version", tool_version.map(_.replaceAll("\\.", "_"))) ++
      opt("description", description) ++
      opt("org", org) ++
@@ -53,6 +69,8 @@ class App extends xsbti.AppMain {
     Exit(App.run(config.arguments))
   }
 }
+
+case class Exit(val code: Int) extends xsbti.Exit
 
 object App {
 
@@ -93,5 +111,3 @@ object App {
     System.exit(run(args))
   }
 }
-
-case class Exit(val code: Int) extends xsbti.Exit
