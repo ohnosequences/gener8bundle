@@ -14,7 +14,6 @@ case class BundleDependency(
   val forSbt = "\"ohnosequences\" %% \"" + 
                   normalize(name) + "\" % \"" + 
                   bundle_version.getOrElse("0.1.0-SNAPSHOT") + "\""
-  val forImport = upperCamel(name)
   val forHList = upperCamel(name) + 
     (tool_version match {
       case None | Some("latest") => ".latest"
@@ -38,10 +37,6 @@ case class BundleDescription(
   if (l.isEmpty) " "
   else l.map(_.forSbt).mkString("libraryDependencies ++= Seq(", ", ", ")")
 
-  def depsImport(l: List[BundleDependency]): String = 
-  if (l.isEmpty) " "
-  else l.map(_.forImport).mkString("import ohnosequences.statica.bundles.{", ", ", "}")
-
   def depsHList(l: List[BundleDependency]): String = 
   if (l.isEmpty) "HNil: HNil"
   else l.map(_.forHList).mkString("flatten(", " :: ", " :: HNil)")
@@ -57,7 +52,6 @@ case class BundleDescription(
      opt("org", org) ++
      opt("scala_version", scala_version) ++
      Seq( ("depsSbt", depsSbt(dependencies)),
-          ("depsImport", depsImport(dependencies)),
           ("depsHList", depsHList(dependencies)))
     ) map {case (k,v) => format(k,v)}
   }
