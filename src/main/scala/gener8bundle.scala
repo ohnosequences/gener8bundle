@@ -39,7 +39,7 @@ case class BundleDescription(
 
   def depsHList(l: List[BundleDependency]): String = 
   if (l.isEmpty) "HNil: HNil"
-  else l.map(_.forHList).mkString("flatten(", " :: ", " :: HNil)")
+  else l.map(_.forHList).mkString("", " :: ", " :: HNil")
 
   def toSeq: Seq[String] = {
     def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
