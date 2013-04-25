@@ -13,13 +13,14 @@ case class BundleDependency(
   , tool_version: Option[String]
   , bundle_version: Option[String]
   ) {
-
-  import giter8.G8._
+  val tv = ToolVersion(tool_version)
+  val className = name.split("""([.-]|\s+)""").map(_.capitalize).mkString 
+  val artifactName = name.toLowerCase.replaceAll("""\s+""", "-")
 
   val forSbt = "\"ohnosequences\" %% \"" + 
-                  normalize(name) + ToolVersion(tool_version).forSbt + "\" % \"" + 
-                  bundle_version.getOrElse("0.1.0-SNAPSHOT") + "\""
-  val forClass = upperCamel(name) + ToolVersion(tool_version).forClass
+                  artifactName + tv.forSbt + "\" % \"" + 
+                  bundle_version.getOrElse("0.1.0") + "\""
+  val forClass = className + tv.forClass
 }
 
 case class BundleDescription(
@@ -31,8 +32,6 @@ case class BundleDescription(
   , scala_version: Option[String]
   , dependencies: List[BundleDependency]
   ) {
-
-  import giter8.G8._
 
   def dependencies_sbt(l: List[BundleDependency]): String = 
     if (l.isEmpty) ""
