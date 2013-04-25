@@ -14,7 +14,7 @@ case class BundleDependency(
   , bundle_version: Option[String]
   ) {
   val tv = ToolVersion(tool_version)
-  val className = name.split("""([.-]|\s+)""").map(_.capitalize).mkString 
+  val className = name.split("""\W""").map(_.capitalize).mkString 
   val artifactName = name.toLowerCase.replaceAll("""\s+""", "-")
 
   val forSbt = "\"ohnosequences\" %% \"" + 
@@ -46,7 +46,8 @@ case class BundleDescription(
     def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
     def notEmpty(k: String, v: String) = if (v.isEmpty) Seq() else Seq((k, v))
 
-    (Seq(("name", name)) ++ 
+    (Seq(("name", name.replaceAll("""\s+""", "-"))
+        ,("className", name.split("""\W""").map(_.capitalize).mkString)) ++ 
      opt("bundle_version", bundle_version) ++
      opt("description", description) ++
      opt("org", org) ++
@@ -80,7 +81,7 @@ object App {
    * returns the process status code */
   def run(args: Array[String]): Int = {
     if(args.length < 2) {
-      println("gener8bundle v.0.6.2")
+      println("gener8bundle v.0.6.3")
       println("Usage: gener8bundle <giter8 template address> <config_1.json> [... <config_n.json>]")
       return 1
     }
