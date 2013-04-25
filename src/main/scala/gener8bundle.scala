@@ -80,6 +80,7 @@ object App {
    * returns the process status code */
   def run(args: Array[String]): Int = {
     if(args.length < 2) {
+      println("gener8bundle v.0.6.2")
       println("Usage: gener8bundle <giter8 template address> <config_1.json> [... <config_n.json>]")
       return 1
     }
