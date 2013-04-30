@@ -30,7 +30,7 @@ object gener8bundleBuild extends Build {
           )
         }
       )
-  )
+  ) dependsOn RootProject(file("/Users/laughedelic/Dropbox/Devel/ohnosequences/scala-ssh"))
 
   // sample release step
   val uploadArtifacts = ReleaseStep(action = st => {

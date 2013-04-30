@@ -1,4 +1,4 @@
-package ohnosequences.statica.gener8bundle
+package ohnosequences.statika.gener8bundle
 
 case class ToolVersion(v: Option[String]) {
   def forSbt:   String = v.map("." + _).getOrElse("")
@@ -11,7 +11,12 @@ case class BundleDependency(
   , bundle_version: Option[String]
   ) {
 
-  import giter8.G8._
+  // import giter8.G8._
+  def startCase(s: String) = s.toLowerCase.split(" ").map(_.capitalize).mkString(" ")
+  def wordOnly(s: String) = s.replaceAll("""\W""", "")
+  def upperCamel(s: String) = wordOnly(startCase(s))
+  def normalize(s: String) = hyphenate(s.toLowerCase)
+  def hyphenate(s: String) = s.replaceAll("""\s+""", "-")
 
   val forSbt = "\"ohnosequences\" %% \"" + 
                   normalize(name) + ToolVersion(tool_version).forSbt + "\" % \"" + 
@@ -29,7 +34,7 @@ case class BundleDescription(
   , dependencies: List[BundleDependency]
   ) {
 
-  import giter8.G8._
+  // import giter8.G8._
 
   def dependencies_sbt(l: List[BundleDependency]): String = 
     if (l.isEmpty) " "
