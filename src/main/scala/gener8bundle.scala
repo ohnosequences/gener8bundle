@@ -94,12 +94,14 @@ object App {
           return err("Error: If you want to test bundle remotely, you need to provide credentials file with --credetntials option")
         if (config.keypair.isEmpty) 
           return err("Error: If you want to test bundle remotely, you need to provide keypair name with --keypair option")
+
         val ec2 = EC2.create(new File(config.credentials))
         TestOnInstance.runTestInstance(ec2, InstanceSpecs(
             instanceType = InstanceType.InstanceType(config.instanceType)
           , amiId = config.ami
-          , keyName = config.keypair
-          ), cmds)
+          , keyName = config.keypair.split("/").last.takeWhile(_ != '.')
+          ), config.keypair, cmds)
+
       } else {
         cmds.foldLeft(0){ (result, cmd) =>
           println(cmd)
@@ -109,12 +111,5 @@ object App {
       }
 
     } getOrElse { return 1 } // if arguments were incorrect
-
-
-      // args.tail.foldLeft(0){ (result, file) =>
-      //   // running it
-      //   val r = Giter8.run(g8cmd.toArray)
-      //   if (r == 0) result else r
-      // }
   }
 }

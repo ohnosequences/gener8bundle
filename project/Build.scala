@@ -17,10 +17,10 @@ object gener8bundleBuild extends Build {
         releaseProcess <<= thisProjectRef apply { ref =>
           Seq[ReleaseStep](
             checkSnapshotDependencies,              // : ReleaseStep
-            inquireVersions,                        // : ReleaseStep
+            // inquireVersions,                        // : ReleaseStep
             runTest,                                // : ReleaseStep
-            setReleaseVersion,                      // : ReleaseStep
-            commitReleaseVersion,                   // : ReleaseStep, performs the initial git checks
+            // setReleaseVersion,                      // : ReleaseStep
+            // commitReleaseVersion,                   // : ReleaseStep, performs the initial git checks
             tagRelease,                             // : ReleaseStep
             publishArtifacts,                       // : ReleaseStep, checks whether `publishTo` is properly set up
             uploadArtifacts                         // : ReleaseStep, uploads generated artifacts to s3
@@ -30,7 +30,7 @@ object gener8bundleBuild extends Build {
           )
         }
       )
-  ) dependsOn RootProject(file("/Users/laughedelic/Dropbox/Devel/ohnosequences/scala-ssh"))
+  )
 
   // sample release step
   val uploadArtifacts = ReleaseStep(action = st => {
