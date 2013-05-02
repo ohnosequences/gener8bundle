@@ -1,9 +1,8 @@
 [app]
   version: 0.7.0
   org: ohnosequences
-  name: gener8bundle_2.10
+  name: gener8bundle
   class: ohnosequences.statika.gener8bundle.App
-  cross-versioned: false
 [scala]
   version: 2.10.0
 [repositories]

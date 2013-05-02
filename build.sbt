@@ -13,6 +13,8 @@ version := "0.7.0"
 
 scalaVersion := "2.10.0"
 
+scalaBinaryVersion := "2.10.0"
+
 publishMavenStyle := true
 
 publishTo <<= version { (v: String) =>
@@ -32,10 +34,12 @@ resolvers ++= Seq (
                   )
 
 libraryDependencies ++= Seq (
-                              "org.json4s" %% "json4s-native" % "3.1.0"
-                            , "ohnosequences" %% "aws-scala-tools" % "0.2.2"
-                            , "com.decodified" %% "scala-ssh" % "0.7.0"
-                            , "com.github.scopt" %% "scopt" % "2.1.0"
+                              "org.json4s" % "json4s-native_2.10" % "3.1.0"
+                            , "ohnosequences" % "aws-scala-tools_2.10" % "0.2.2"
+                            , "com.decodified" % "scala-ssh_2.10" % "0.7.0"
+                            // , "ch.qos.logback" % "logback-classic" % "1.0.7"
+                            , "org.bouncycastle" % "bcprov-jdk16" % "1.46"
+                            , "com.github.scopt" % "scopt_2.10" % "2.1.0"
                             )
 
 scalacOptions ++= Seq(
