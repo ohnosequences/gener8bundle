@@ -11,7 +11,6 @@ case class BundleDependency(
   , bundle_version: Option[String]
   ) {
 
-  // import giter8.G8._
   def startCase(s: String) = s.toLowerCase.split(" ").map(_.capitalize).mkString(" ")
   def wordOnly(s: String) = s.replaceAll("""\W""", "")
   def upperCamel(s: String) = wordOnly(startCase(s))
@@ -34,10 +33,8 @@ case class BundleDescription(
   , dependencies: List[BundleDependency]
   ) {
 
-  // import giter8.G8._
-
   def dependencies_sbt(l: List[BundleDependency]): String = 
-    if (l.isEmpty) " "
+    if (l.isEmpty) ""
     else l.map(_.forSbt).mkString("libraryDependencies ++= Seq(", ", ", ")")
 
   def dependencies_class(l: List[BundleDependency]): String = 
@@ -47,16 +44,17 @@ case class BundleDescription(
   def toSeq: Seq[String] = {
     def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
     def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
+    def notEmpty(k: String, v: String) = if (v.isEmpty) Seq() else Seq((k, v))
 
-    (Seq(("name", name)) ++ 
-     opt("bundle_version", bundle_version) ++
-     opt("description", description) ++
-     opt("org", org) ++
-     opt("scala_version", scala_version) ++
-     Seq( ("dependencies_sbt", dependencies_sbt(dependencies)),
-          ("dependencies_class", dependencies_class(dependencies)),
-          ("tool_version_sbt", ToolVersion(tool_version).forSbt),
-          ("tool_version_class", ToolVersion(tool_version).forClass))
+    (Seq(("name", name))
+    ++ opt("bundle_version", bundle_version)
+    ++ opt("description", description)
+    ++ opt("org", org)
+    ++ opt("scala_version", scala_version)
+    ++ notEmpty("dependencies_sbt", dependencies_sbt(dependencies))
+    ++ notEmpty("dependencies_class", dependencies_class(dependencies))
+    ++ notEmpty("tool_version_sbt", ToolVersion(tool_version).forSbt)
+    ++ notEmpty("tool_version_class", ToolVersion(tool_version).forClass)
     ) map {case (k,v) => format(k,v)}
   }
 }
