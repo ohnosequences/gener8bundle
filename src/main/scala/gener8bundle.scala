@@ -19,6 +19,7 @@ case class Config(
   , instanceType: String = "c1.medium"
   , ami: String = "ami-c37474b7"
   , template: String = "ohnosequences/statika-bundle"
+  , branch: String = "master"
   , jsons: List[String] = List()
   )
 
@@ -42,7 +43,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.0") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.2") {
       def options = Seq(
         flag("r", "remotely", "Test bundle configuration on Amazon EC2 instance (default off)") {
           (c: Config) => c.copy(remotely = true)
@@ -59,8 +60,11 @@ object App {
         opt("a", "ami", "Amazon Machine Image (AMI) ID (default ami-c37474b7)") {
           (v: String, c: Config) => c.copy(ami = v)
         },
-        opt("t", "template", "Bundle giter8 template from GitHub in format <org/repo[/version]> (default ohnosequences/statika-bundle)") {
+        opt("t", "template", "Bundle giter8 template from GitHub in format <org/repo[/version]> (default is ohnosequences/statika-bundle)") {
           (v: String, c: Config) => c.copy(template = v)
+        },
+        opt("b", "branch", "Branch of the giter8 template (default is master)") {
+          (v: String, c: Config) => c.copy(branch = v)
         },
         arglist("<json-file>...", "Bundle configuration file(s) in JSON format") {
           (v: String, c: Config) => c.copy(jsons = v :: c.jsons)
@@ -79,7 +83,7 @@ object App {
         // parsing it
         val conf = jsonConf.extract[BundleDescription]
         // constructing g8 command with arguments
-        "g8" +: config.template +: conf.toSeq
+        "g8" +: config.template +: "-b" +: config.branch +: conf.toSeq
       }
 
       def err(msg: String): Int = {

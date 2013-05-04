@@ -10,17 +10,14 @@ case class BundleDependency(
   , tool_version: Option[String]
   , bundle_version: Option[String]
   ) {
-
-  def startCase(s: String) = s.toLowerCase.split(" ").map(_.capitalize).mkString(" ")
-  def wordOnly(s: String) = s.replaceAll("""\W""", "")
-  def upperCamel(s: String) = wordOnly(startCase(s))
-  def normalize(s: String) = hyphenate(s.toLowerCase)
-  def hyphenate(s: String) = s.replaceAll("""\s+""", "-")
+  val tv = ToolVersion(tool_version)
+  val className = name.split("""\W""").map(_.capitalize).mkString 
+  val artifactName = name.toLowerCase.replaceAll("""\s+""", "-")
 
   val forSbt = "\"ohnosequences\" %% \"" + 
-                  normalize(name) + ToolVersion(tool_version).forSbt + "\" % \"" + 
-                  bundle_version.getOrElse("0.1.0-SNAPSHOT") + "\""
-  val forClass = upperCamel(name) + ToolVersion(tool_version).forClass
+                  artifactName + tv.forSbt + "\" % \"" + 
+                  bundle_version.getOrElse("0.1.0") + "\""
+  val forClass = className + tv.forClass
 }
 
 case class BundleDescription(
@@ -31,6 +28,7 @@ case class BundleDescription(
   , org: Option[String]
   , scala_version: Option[String]
   , dependencies: List[BundleDependency]
+  , publish_private: Boolean
   ) {
 
   def dependencies_sbt(l: List[BundleDependency]): String = 
@@ -46,7 +44,10 @@ case class BundleDescription(
     def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
     def notEmpty(k: String, v: String) = if (v.isEmpty) Seq() else Seq((k, v))
 
-    (Seq(("name", name))
+    (Seq( ("name", name)
+        , ("private", publish_private.toString)
+        , ("className", name.split("""\W""").map(_.capitalize).mkString)
+        )
     ++ opt("bundle_version", bundle_version)
     ++ opt("description", description)
     ++ opt("org", org)
