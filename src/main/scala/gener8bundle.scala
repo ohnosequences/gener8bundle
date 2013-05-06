@@ -13,7 +13,8 @@ class App extends xsbti.AppMain {
 case class Exit(val code: Int) extends xsbti.Exit
 
 case class Config(
-    remotely: Boolean = false
+    prefill: Boolean = false
+  , remotely: Boolean = false
   , credentials: String = ""
   , keypair: String = ""
   , instanceType: String = "c1.medium"
@@ -26,11 +27,10 @@ case class Config(
 object App {
 
   import scala.sys.process._
-  import scala.io.Source
-  import java.io.File
+  import scala.io._
+  import java.io._
   import org.json4s._
   import org.json4s.native.JsonMethods._
-  // import giter8.Giter8
   import BundleDescription._
   import TestOnInstance._
   import ohnosequences.awstools.ec2._
@@ -43,8 +43,11 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.2") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.3") {
       def options = Seq(
+        flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
+          (c: Config) => c.copy(prefill = true)
+        },
         flag("r", "remotely", "Test bundle configuration on Amazon EC2 instance (default off)") {
           (c: Config) => c.copy(remotely = true)
         },
@@ -73,6 +76,35 @@ object App {
     } 
 
     argsParser.parse(args, Config()) map { config =>
+
+      if (config.prefill) {
+        import org.json4s.JsonDSL._
+        config.jsons map { j => 
+          val name = j stripSuffix ".json"
+          val bd = s"""{
+    "name": "$name",            // String - name of the bundle
+    "bundle_version": "0.1.0",  // Option[String] - initial version of bundle
+    "tool_version": "",         // Option[String] - version of the tool, that is bundled
+    "description": "",          // Option[String] - optional description
+    "org": "ohnosequences",     // Option[String] - name of organization which is used in package and artifact names
+    "scala_version": "2.10.0",  // Option[String] - version of Scala compiler
+    "publish_private": "true",  // Boolean - if true, bundle will use private S3 buckets for publishing
+    "dependencies": [           // List[BundleDependency] - optional list of dependencies, which are also json objects:
+    //{
+        //"name": ""            // String - name of dependency
+        //"tool_version": ""    // Option[String] - it's tool version
+        //"bundle_version": ""  // Option[String] - it's version itself
+    //} , ...
+    ]
+}"""
+          val file = new File(name+".json")
+          if (file.exists) {
+            println("Error: file "+ name +".json already exists")
+            return 1
+          } else Some(new PrintWriter(file)).foreach{p => p.write(bd); p.close}
+        }
+        return 0
+      }
 
       implicit val formats = DefaultFormats
 
