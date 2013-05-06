@@ -6,11 +6,9 @@ import com.decodified.scalassh._
 object TestOnInstance {
   def runTestInstance(ec2: EC2, instanceSpecs: InstanceSpecs, keypair: String, cmds: List[Seq[String]]): Int = {
     println("Running instance for testing...")
-    // val instances = ec2.runInstances(1, instanceSpecs)
-    // if (instances.isEmpty) return 1
-    // val inst = instances.head
-
-    val inst = ec2.getInstanceById("i-989568d5").get
+    val instances = ec2.runInstances(1, instanceSpecs)
+    if (instances.isEmpty) return 1
+    val inst = instances.head
 
     print("Waiting for instance initialization...")
     while (inst.getState() != "running") {
