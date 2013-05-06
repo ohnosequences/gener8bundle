@@ -9,7 +9,7 @@ name := "gener8bundle"
 
 organization := "ohnosequences"
 
-version := "0.7.2"
+version := "0.7.3"
 
 scalaVersion := "2.10.0"
 
