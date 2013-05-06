@@ -88,7 +88,7 @@ object App {
     "description": "",          // Option[String] - optional description
     "org": "ohnosequences",     // Option[String] - name of organization which is used in package and artifact names
     "scala_version": "2.10.0",  // Option[String] - version of Scala compiler
-    "publish_private": "true",  // Boolean - if true, bundle will use private S3 buckets for publishing
+    "publish_private": true,    // Boolean - if true, bundle will use private S3 buckets for publishing
     "dependencies": [           // List[BundleDependency] - optional list of dependencies, which are also json objects:
     //{
         //"name": ""            // String - name of dependency
