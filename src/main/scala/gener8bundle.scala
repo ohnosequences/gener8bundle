@@ -17,11 +17,12 @@ case class Config(
   , remotely: Boolean = false
   , credentials: String = ""
   , keypair: String = ""
+  , instanceId: String = ""
   , instanceType: String = "c1.medium"
-  , ami: String = "ami-c37474b7"
+  , ami: String = "ami-44939930"
   , template: String = "ohnosequences/statika-bundle"
   , branch: String = "master"
-  , jsons: List[String] = List()
+  , json: String = ""
   )
 
 object App {
@@ -43,7 +44,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.4") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.5") {
       def options = Seq(
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
@@ -57,10 +58,13 @@ object App {
         opt("k", "keypair", "Keypair for connecting to the test EC2 instance") {
           (v: String, c: Config) => c.copy(keypair = v)
         },
-        opt("i", "type", "Instance type (default is c1.medium)") {
+        opt("i", "id", "Instance id, if you have already running instance") {
+          (v: String, c: Config) => c.copy(instanceId = v)
+        },
+        opt("type", "Instance type (default is c1.medium)") {
           (v: String, c: Config) => c.copy(instanceType = v)
         },
-        opt("a", "ami", "Amazon Machine Image (AMI) ID (default ami-c37474b7)") {
+        opt("a", "ami", "Amazon Machine Image (AMI) ID (default ami-44939930)") {
           (v: String, c: Config) => c.copy(ami = v)
         },
         opt("t", "template", "Bundle giter8 template from GitHub in format <org/repo[/version]> (default is ohnosequences/statika-bundle)") {
@@ -69,20 +73,19 @@ object App {
         opt("b", "branch", "Branch of the giter8 template (default is master)") {
           (v: String, c: Config) => c.copy(branch = v)
         },
-        arglist("<json-file>...", "Bundle configuration file(s) in JSON format") {
-          (v: String, c: Config) => c.copy(jsons = v :: c.jsons)
+        arg("<json-file>", "Bundle configuration file(s) in JSON format") {
+          (v: String, c: Config) => c.copy(json = v)
         }
       )
     } 
 
     argsParser.parse(args, Config()) map { config =>
 
+      val jname = config.json stripSuffix ".json"
       if (config.prefill) {
         import org.json4s.JsonDSL._
-        config.jsons map { j => 
-          val name = j stripSuffix ".json"
-          val bd = s"""{
-    "name": "$name",            // String - name of the bundle
+        val bd = s"""{
+    "name": "$jname",            // String - name of the bundle
     "bundle_version": "0.1.0",  // Option[String] - initial version of bundle
     "tool_version": "",         // Option[String] - version of the tool, that is bundled
     "description": "",          // Option[String] - optional description
@@ -97,25 +100,24 @@ object App {
     //} , ...
     ]
 }"""
-          val file = new File(name+".json")
-          if (file.exists) {
-            println("Error: file "+ name +".json already exists")
-            return 1
-          } else Some(new PrintWriter(file)).foreach{p => p.write(bd); p.close}
-        }
+        val file = new File(jname+".json")
+        if (file.exists) {
+          println("Error: file "+ jname +".json already exists")
+          return 1
+        } else Some(new PrintWriter(file)).foreach{p => p.write(bd); p.close}
         return 0
       }
 
-      implicit val formats = DefaultFormats
-
-      // constructing giter8 commands for jsons
-      val cmds: List[Seq[String]] = config.jsons map { file =>
+      // constructing giter8 command for json
+      val cmd: Seq[String] = {
+        implicit val formats = DefaultFormats
         // reading file
-        val jsonConf = parse(Source.fromFile(file).mkString)
+        val j = Source.fromFile(config.json).mkString
         // parsing it
-        val conf = jsonConf.extract[BundleDescription]
+        val jsonConf = parse(j)
+        val bd = jsonConf.extract[BundleDescription]
         // constructing g8 command with arguments
-        "g8" +: config.template +: "-b" +: config.branch +: conf.toSeq
+        "g8" +: config.template +: "-b" +: config.branch +: bd.toSeq
       }
 
       def err(msg: String): Int = {
@@ -123,27 +125,35 @@ object App {
         argsParser.showUsage
         return 1
       }
-      
 
-      if (config.remotely) {
+      if (!config.remotely) cmd.!
+      else {
         if (config.credentials.isEmpty) 
           return err("Error: If you want to test bundle remotely, you need to provide credentials file with --credetntials option")
         if (config.keypair.isEmpty) 
           return err("Error: If you want to test bundle remotely, you need to provide keypair name with --keypair option")
 
         val ec2 = EC2.create(new File(config.credentials))
-        TestOnInstance.runTestInstance(ec2, InstanceSpecs(
-            instanceType = InstanceType.InstanceType(config.instanceType)
-          , amiId = config.ami
-          , keyName = config.keypair.split("/").last.takeWhile(_ != '.')
-          ), config.keypair, cmds)
 
-      } else {
-        cmds.foldLeft(0){ (result, cmd) =>
-          println(cmd)
-          val r = cmd.!
-          if (r == 0) result else r
-        }
+        val instances = if (config.instanceId.isEmpty) {
+          val specs = InstanceSpecs(
+              instanceType = InstanceType.InstanceType(config.instanceType)
+            , amiId = config.ami
+            , keyName = config.keypair.split("/").last.takeWhile(_ != '.')
+            )
+          ec2.runInstances(1, specs).toList
+        } else 
+          ec2.getInstanceById(config.instanceId).toList
+
+        if (instances.isEmpty)
+          return err("Couldn't access an instance for testing")
+
+        TestOnInstance.test(
+          instances.head
+        , config.keypair
+        , cmd.mkString(" ")
+        , jname
+        )
       }
 
     } getOrElse { return 1 } // if arguments were incorrect

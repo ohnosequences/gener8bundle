@@ -2,29 +2,28 @@ package ohnosequences.statika.gener8bundle
 
 import ohnosequences.awstools.ec2._
 import com.decodified.scalassh._
+import scala.sys.process._
 
 object TestOnInstance {
-  def runTestInstance(ec2: EC2, instanceSpecs: InstanceSpecs, keypair: String, cmds: List[Seq[String]]): Int = {
-    println("Running instance for testing...")
-    val instances = ec2.runInstances(1, instanceSpecs)
-    if (instances.isEmpty) return 1
-    val inst = instances.head
-
-    print("Waiting for instance initialization...")
-    while (inst.getState() != "running") {
-      Thread sleep 1000; print(".")
-    }; println("ok!")
-
-    print("Getting instance address...")
-    while (inst.getPublicDNS() == None) {
-      Thread sleep 1000; print(".")
-    }; println("ok!")
-    val addr = inst.getPublicDNS().get
-
-    println("Address: " + addr)
+  def test(
+        instance: EC2#Instance
+      , keypair: String
+      , cmd: String
+      , jname: String
+      ): Int = {
     
-    print("Waiting for instance status ckecks...")
-    while (inst.getStatus() != Some(InstanceStatus("ok","ok"))) {
+    println("Instance ID: " + instance.getInstanceId())
+
+    print("Instance initialization...")
+    while (instance.getState() != "running") {
+      Thread sleep 1000; print(".")
+    }; println("ok!")
+
+    val addr = instance.getPublicDNS().get
+    println("Instance address: " + addr)
+    
+    print("Instance status ckecks...")
+    while (instance.getStatus() != Some(InstanceStatus("ok","ok"))) {
       Thread sleep 1000; print(".")
     }; println("ok!")
 
@@ -48,10 +47,15 @@ object TestOnInstance {
     , Left("3. Installing giter8...")
     , Right("/home/ec2-user/bin/cs n8han/giter8")
 
-    , Left("4. Installing gener8bundle...")
-    , Right("/home/ec2-user/bin/cs ohnosequences/gener8bundle")
+    // , Left("4. Installing gener8bundle...")
+    // , Right("/home/ec2-user/bin/cs ohnosequences/gener8bundle")// -b feature/remote-testing")
 
     , Left("Tools are ready")
+
+    , Left("Generating bundle for testing")
+    , Right("/home/ec2-user/bin/" + cmd)
+    , Right("cd " + jname)
+    , Right("sbt run")
     )
 
     val result = SSH(addr, sshConfig) { client =>
@@ -61,7 +65,7 @@ object TestOnInstance {
           msg
         }
         case Right(cmd) => {
-          println(cmd)
+          println(cmd.command)
           client.exec(cmd) match {
             case Left(msg) => {
               println("Error: " + msg)
