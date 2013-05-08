@@ -17,7 +17,6 @@ case class Config(
   , remotely: Boolean = false
   , credentials: String = ""
   , keypair: String = ""
-  , instanceId: String = ""
   , instanceType: String = "c1.medium"
   , ami: String = "ami-44939930"
   , template: String = "ohnosequences/statika-bundle"
@@ -44,7 +43,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.5") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.7.6") {
       def options = Seq(
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
@@ -57,9 +56,6 @@ object App {
         },
         opt("k", "keypair", "Keypair for connecting to the test EC2 instance") {
           (v: String, c: Config) => c.copy(keypair = v)
-        },
-        opt("i", "id", "Instance id, if you have already running instance") {
-          (v: String, c: Config) => c.copy(instanceId = v)
         },
         opt("type", "Instance type (default is c1.medium)") {
           (v: String, c: Config) => c.copy(instanceType = v)
@@ -133,25 +129,9 @@ object App {
         if (config.keypair.isEmpty) 
           return err("Error: If you want to test bundle remotely, you need to provide keypair name with --keypair option")
 
-        val ec2 = EC2.create(new File(config.credentials))
-
-        val instances = if (config.instanceId.isEmpty) {
-          val specs = InstanceSpecs(
-              instanceType = InstanceType.InstanceType(config.instanceType)
-            , amiId = config.ami
-            , keyName = config.keypair.split("/").last.takeWhile(_ != '.')
-            )
-          ec2.runInstances(1, specs).toList
-        } else 
-          ec2.getInstanceById(config.instanceId).toList
-
-        if (instances.isEmpty)
-          return err("Couldn't access an instance for testing")
-
         TestOnInstance.test(
-          instances.head
-        , config.keypair
-        , cmd.mkString(" ")
+          config
+        , cmd.map("'"+_+"'").mkString(" ")
         , jname
         )
       }

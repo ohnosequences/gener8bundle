@@ -9,7 +9,7 @@ name := "gener8bundle"
 
 organization := "ohnosequences"
 
-version := "0.7.5"
+version := "0.7.6"
 
 scalaVersion := "2.10.0"
 
@@ -30,15 +30,11 @@ resolvers ++= Seq (
                   , "Sonatype Snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots"
                   , "Era7 Releases"       at "http://releases.era7.com.s3.amazonaws.com"
                   , "Era7 Snapshots"      at "http://snapshots.era7.com.s3.amazonaws.com"
-                  , "spray repo"          at "http://repo.spray.io"
                   )
 
 libraryDependencies ++= Seq (
                               "org.json4s" % "json4s-native_2.10" % "3.1.0"
                             , "ohnosequences" % "aws-scala-tools_2.10" % "0.2.2"
-                            , "com.decodified" % "scala-ssh_2.10" % "0.7.0"
-                            // , "ch.qos.logback" % "logback-classic" % "1.0.7"
-                            , "org.bouncycastle" % "bcprov-jdk16" % "1.46"
                             , "com.github.scopt" % "scopt_2.10" % "2.1.0"
                             )
 
