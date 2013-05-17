@@ -19,6 +19,7 @@ case class Config(
   , keypair: String = ""
   , instanceType: String = "c1.medium"
   , ami: String = "ami-44939930"
+  , roleName: String = ""
   , template: String = "ohnosequences/statika-bundle"
   , branch: String = "master"
   , json: String = ""
@@ -48,7 +49,7 @@ object App {
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
         },
-        flag("r", "remotely", "Test bundle configuration on Amazon EC2 instance (default off)") {
+        flag("remotely", "Test bundle configuration on Amazon EC2 instance (default off)") {
           (c: Config) => c.copy(remotely = true)
         },
         opt("c", "credentials", "Credentials file (with access key and secret key for Amazon AWS") {
@@ -62,6 +63,9 @@ object App {
         },
         opt("a", "ami", "Amazon Machine Image (AMI) ID (default ami-44939930)") {
           (v: String, c: Config) => c.copy(ami = v)
+        },
+        opt("r", "role", "Role name, used for launching instance") {
+          (v: String, c: Config) => c.copy(roleName = v)
         },
         opt("t", "template", "Bundle giter8 template from GitHub in format <org/repo[/version]> (default is ohnosequences/statika-bundle)") {
           (v: String, c: Config) => c.copy(template = v)
@@ -113,7 +117,7 @@ object App {
         val jsonConf = parse(j)
         val bd = jsonConf.extract[BundleDescription]
         // constructing g8 command with arguments
-        "g8" +: config.template +: "-b" +: config.branch +: bd.toSeq
+        "g8" +: config.template +: "--branch" +: config.branch +: bd.toSeq
       }
 
       def err(msg: String): Int = {

@@ -29,6 +29,7 @@ case class BundleDescription(
   , scala_version: Option[String]
   , dependencies: List[BundleDependency]
   , publish_private: Boolean
+  , role_name: Option[String]
   ) {
 
   def dependencies_sbt(l: List[BundleDependency]): String = 
@@ -52,6 +53,7 @@ case class BundleDescription(
     ++ opt("description", description)
     ++ opt("org", org)
     ++ opt("scala_version", scala_version)
+    ++ opt("role_name", role_name)
     ++ notEmpty("dependencies_sbt", dependencies_sbt(dependencies))
     ++ notEmpty("dependencies_class", dependencies_class(dependencies))
     ++ notEmpty("tool_version_sbt", ToolVersion(tool_version).forSbt)

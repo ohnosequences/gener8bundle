@@ -2,7 +2,6 @@ package ohnosequences.statika.gener8bundle
 
 import ohnosequences.awstools.ec2._
 import scala.sys.process._
-// import Config
 import java.io._
 
 object TestOnInstance {
@@ -52,6 +51,7 @@ sbt run &> /root/sbt-run.out
         , amiId = config.ami
         , keyName = config.keypair.split("/").last.takeWhile(_ != '.')
         , userData = TestOnInstance.initScript(cmd, jname)
+        , instanceProfileARN = "arn:aws:iam::857948138625:instance-profile/" + config.roleName
         )
       ec2.runInstances(1, specs)
     }
