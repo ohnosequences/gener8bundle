@@ -1,61 +1,75 @@
 package ohnosequences.statika.gener8bundle
 
-case class ToolVersion(v: Option[String]) {
-  def forSbt:   String = v.map("." + _).getOrElse("")
-  def forClass: String = v.map("_" + _.replaceAll("\\.", "_")).getOrElse("")
-}
+object ConfigDescription {
 
-case class BundleDependency(
-    name: String
-  , tool_version: Option[String]
-  , bundle_version: Option[String]
-  ) {
-  val tv = ToolVersion(tool_version)
-  val className = name.split("""\W""").map(_.capitalize).mkString 
-  val artifactName = name.toLowerCase.replaceAll("""\s+""", "-")
-
-  val forSbt = "\"ohnosequences\" %% \"" + 
-                  artifactName + tv.forSbt + "\" % \"" + 
-                  bundle_version.getOrElse("0.1.0") + "\""
-  val forClass = className + tv.forClass
-}
-
-case class BundleDescription(
-    name: String
-  , bundle_version: Option[String]
-  , tool_version: Option[String]
-  , description: Option[String]
-  , org: Option[String]
-  , scala_version: Option[String]
-  , dependencies: List[BundleDependency]
-  , publish_private: Boolean
-  ) {
-
-  def dependencies_sbt(l: List[BundleDependency]): String = 
-    if (l.isEmpty) ""
-    else l.map(_.forSbt).mkString("libraryDependencies ++= Seq(", ", ", ")")
-
-  def dependencies_class(l: List[BundleDependency]): String = 
-    if (l.isEmpty) "HNil: HNil"
-    else l.map(_.forClass).mkString("", " :: ", " :: HNil")
-
-  def toSeq: Seq[String] = {
-    def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
-    def opt[A](k: String, v: Option[A]) = v.toList.map((k, _))
-    def notEmpty(k: String, v: String) = if (v.isEmpty) Seq() else Seq((k, v))
-
-    (Seq( ("name", name)
-        , ("private", publish_private.toString)
-        , ("className", name.split("""\W""").map(_.capitalize).mkString)
-        )
-    ++ opt("bundle_version", bundle_version)
-    ++ opt("description", description)
-    ++ opt("org", org)
-    ++ opt("scala_version", scala_version)
-    ++ notEmpty("dependencies_sbt", dependencies_sbt(dependencies))
-    ++ notEmpty("dependencies_class", dependencies_class(dependencies))
-    ++ notEmpty("tool_version_sbt", ToolVersion(tool_version).forSbt)
-    ++ notEmpty("tool_version_class", ToolVersion(tool_version).forClass)
-    ) map {case (k,v) => format(k,v)}
+  case class ToolVersion(ver: Option[String]) {
+    val v = (ver map { x => if (x.isEmpty) None else Some(x) }).flatten
+    def forSbt:   Option[String] = v.map("." + _)
+    def forClass: Option[String] = v.map("_" + _.replaceAll("\\.", "_"))
   }
+
+  def className(s: String) = s.split("""\W""").map(_.capitalize).mkString 
+
+  case class BundleDependency(
+      name: String
+    , tool_version: Option[String]
+    , bundle_version: Option[String]
+    ) {
+    val tv = ToolVersion(tool_version)
+    val tvSbt = tv.forSbt.getOrElse("")
+    val tvClass = tv.forClass.getOrElse("")
+    val artifactName = name.toLowerCase.replaceAll("""\s+""", "-")
+
+    val forSbt = "\"ohnosequences\" %% \"" + 
+                    artifactName + tvSbt + "\" % \"" + 
+                    bundle_version.getOrElse("0.1.0") + "\""
+    val forClass = className(name) + tvClass
+  }
+
+  case class BundleDescription(
+      name: String
+    , publish_private: Boolean
+    , description: Option[String]
+    , org: Option[String]
+    , bundle_version: Option[String]
+    , tool_version: Option[String]
+    , scala_version: Option[String]
+    , statika_version: Option[String]
+    , credentials: Option[String]
+    , ami: BundleDependency
+    , dependencies: List[BundleDependency]
+    ) {
+
+    def dependencies_sbt(l: List[BundleDependency]): Option[String] = 
+      if (l.isEmpty) None
+      else Some(l.map(_.forSbt).mkString("libraryDependencies ++= Seq(", ", ", ")"))
+
+    def dependencies_class(l: List[BundleDependency]): Option[String] = 
+      if (l.isEmpty) Some("HNil: HNil")
+      else Some(l.map(_.forClass).mkString("", " :: ", " :: HNil"))
+
+    def toSeq: Seq[String] = {
+      def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
+      def opt(k: String, v: Option[String]) = v.toList.map((k, _))
+
+      (Seq( ("name", name)
+          , ("private", publish_private.toString)
+          , ("class_name", className(name))
+          , ("ami", className(ami.forClass))
+          ) ++
+      (Seq( ("bundle_version", bundle_version)
+          , ("description", description)
+          , ("org", org)
+          , ("scala_version", scala_version)
+          , ("statika_version", statika_version)
+          , ("credentials", credentials)
+          , ("dependencies_sbt", dependencies_sbt(ami :: dependencies))
+          , ("dependencies_class", dependencies_class(ami :: dependencies))
+          , ("tool_version_sbt", ToolVersion(tool_version).forSbt)
+          , ("tool_version_class", ToolVersion(tool_version).forClass)
+          ) flatMap { case (k,v) => opt(k,v) })
+      ) map { case (k,v) => format(k,v) }
+    }
+  }
+
 }
