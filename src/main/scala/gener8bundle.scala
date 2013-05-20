@@ -43,7 +43,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.8.1") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.9.0") {
       def options = Seq(
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
@@ -135,19 +135,21 @@ object App {
         return 1
       }
 
-      if (!config.remotely) g8cmd.!
-      else {
-        if (config.credentials.isEmpty) 
-          return err("Error: If you want to test bundle remotely, you need to provide credentials file with --credetntials option")
-        if (config.keypair.isEmpty) 
-          return err("Error: If you want to test bundle remotely, you need to provide keypair name with --keypair option")
+      g8cmd.!
 
-        TestOnInstance.test(
-          config
-        , g8cmd.map("'"+_+"'").mkString(" ")
-        , jname
-        )
-      }
+      // if (!config.remotely) g8cmd.!
+      // else {
+      //   if (config.credentials.isEmpty) 
+      //     return err("Error: If you want to test bundle remotely, you need to provide credentials file with --credetntials option")
+      //   if (config.keypair.isEmpty) 
+      //     return err("Error: If you want to test bundle remotely, you need to provide keypair name with --keypair option")
+
+      //   TestOnInstance.test(
+      //     config
+      //   , g8cmd.map("'"+_+"'").mkString(" ")
+      //   , jname
+      //   )
+      // }
 
     } getOrElse { return 1 } // if arguments were incorrect
   }

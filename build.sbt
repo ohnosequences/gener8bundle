@@ -31,7 +31,7 @@ resolvers ++= Seq (
 
 libraryDependencies ++= Seq (
                               "org.json4s" % "json4s-native_2.10" % "3.1.0"
-                            , "ohnosequences" % "aws-scala-tools_2.10" % "0.2.2"
+                            , "ohnosequences" % "aws-scala-tools_2.10" % "0.2.3"
                             , "com.github.scopt" % "scopt_2.10" % "2.1.0"
                             )
 
