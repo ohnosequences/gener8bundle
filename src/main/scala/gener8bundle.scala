@@ -20,7 +20,7 @@ case class Config(
   , instanceType: String = "c1.medium"
   , ami: String = "ami-44939930"
   , template: String = "ohnosequences/statika-bundle"
-  , branch: String = "master"
+  , branch: String = ""
   , json: String = ""
   )
 
@@ -43,7 +43,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.8.0") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.8.1") {
       def options = Seq(
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
@@ -112,17 +112,22 @@ object App {
       }
 
       // constructing giter8 command for json
-      val cmd: Seq[String] = {
-        implicit val formats = DefaultFormats
-        // reading file
-        val j = Source.fromFile(config.json).mkString
-        // parsing it
-        val jsonConf = parse(j)
-        val bd = jsonConf.extract[BundleDescription]
-        // constructing g8 command with arguments
-        "g8" +: config.template +: "-b" +: config.branch +: bd.toSeq
-      }
-      println(cmd.mkString(" "))
+
+      implicit val formats = DefaultFormats
+      // reading file
+      val j = Source.fromFile(config.json).mkString
+      // parsing it
+      val jsonConf = parse(j)
+      val bd = jsonConf.extract[BundleDescription]
+
+      val g8args: Seq[String] =
+        Seq(config.template) ++
+        (if (config.branch.isEmpty) Seq() else Seq("-b", config.branch)) ++
+        bd.toSeq
+
+      val g8cmd = "g8" +: g8args
+
+      println(g8cmd.mkString(" \\\n  "))
 
       def err(msg: String): Int = {
         println(msg)
@@ -130,7 +135,7 @@ object App {
         return 1
       }
 
-      if (!config.remotely) cmd.!
+      if (!config.remotely) g8cmd.!
       else {
         if (config.credentials.isEmpty) 
           return err("Error: If you want to test bundle remotely, you need to provide credentials file with --credetntials option")
@@ -139,7 +144,7 @@ object App {
 
         TestOnInstance.test(
           config
-        , cmd.map("'"+_+"'").mkString(" ")
+        , g8cmd.map("'"+_+"'").mkString(" ")
         , jname
         )
       }

@@ -1,4 +1,3 @@
-
 import sbtrelease._
 import ReleaseStateTransformations._
 import gener8bundleBuild._

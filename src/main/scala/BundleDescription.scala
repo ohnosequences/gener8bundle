@@ -2,13 +2,14 @@ package ohnosequences.statika.gener8bundle
 
 object ConfigDescription {
 
-  case class ToolVersion(ver: Option[String]) {
-    val v = (ver map { x => if (x.isEmpty) None else Some(x) }).flatten
-    def forSbt:   Option[String] = v.map("." + _)
-    def forClass: Option[String] = v.map("_" + _.replaceAll("\\.", "_"))
+  case class ToolVersion(v: Option[String]) {
+    def forSbt:   Option[String] = nonEmpty(v).map("." + _)
+    def forClass: Option[String] = nonEmpty(v).map("_" + _.replaceAll("\\.", "_"))
   }
 
-  def className(s: String) = s.split("""\W""").map(_.capitalize).mkString 
+  def nonEmpty(s: Option[String]) = if (s == Some("")) None else s
+
+  def className(s: String) = s.split("""\W""").map(_.capitalize).mkString
 
   case class BundleDependency(
       name: String
@@ -58,7 +59,7 @@ object ConfigDescription {
           , ("ami", className(ami.forClass))
           ) ++
       (Seq( ("bundle_version", bundle_version)
-          , ("description", description)
+          , ("description", nonEmpty(description))
           , ("org", org)
           , ("scala_version", scala_version)
           , ("statika_version", statika_version)
