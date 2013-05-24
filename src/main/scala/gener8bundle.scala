@@ -43,7 +43,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.9.0") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.9.1") {
       def options = Seq(
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
@@ -81,27 +81,20 @@ object App {
       if (config.prefill) {
         import org.json4s.JsonDSL._
         val bd = s"""{
-    "name": "$jname",           // String - name of the bundle
-    "bundle_version": "0.1.0",  // Option[String] - initial version of bundle
-    "tool_version": "",         // Option[String] - version of the tool, that is bundled
-    "description": "",          // Option[String] - optional description
-    "org": "ohnosequences",     // Option[String] - name of organization which is used in package and artifact names
-    "scala_version": "2.10.0",  // Option[String] - version of Scala compiler
-    "publish_private": true,    // Boolean - if true, bundle will use private S3 buckets for publishing
-    "statika_version": "0.8.1", // Option[String] - version of statika to use
-    "credentials": "AwsCredentials.properties", // Option[String] - location of credentials for sbt-s3-resolver
-    "ami":{                     // BundleDependency - namespace of the bundle (AMI bundle)
+    "name": "$jname",
+    "bundle_version": "0.1.0-SNAPSHOT",
+    "tool_version": "",
+    "description": "",
+    "org": "ohnosequences",
+    "publish_private": true,
+    "scala_version": "2.10.0",
+    "statika_version": "0.8.+",
+    "ami": {
         "name": "ami-44939930",
         "tool_version": "2013.03",
-        "bundle_version": "0.3.1"
+        "bundle_version": "0.3.+"
     },
-    "dependencies": [           // List[BundleDependency] - optional list of dependencies, which are also json objects:
-    //{
-        //"name": ""            // String - name of dependency
-        //"tool_version": ""    // Option[String] - it's tool version
-        //"bundle_version": ""  // Option[String] - it's version itself
-    //} , ...
-    ]
+    "dependencies": []
 }"""
         val file = new File(jname+".json")
         if (file.exists) {

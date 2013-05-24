@@ -36,7 +36,7 @@ object ConfigDescription {
     , tool_version: Option[String]
     , scala_version: Option[String]
     , statika_version: Option[String]
-    , credentials: Option[String]
+    // , credentials: Option[String]
     , ami: BundleDependency
     , dependencies: List[BundleDependency]
     ) {
@@ -63,7 +63,7 @@ object ConfigDescription {
           , ("org", org)
           , ("scala_version", scala_version)
           , ("statika_version", statika_version)
-          , ("credentials", credentials)
+          // , ("credentials", credentials)
           , ("dependencies_sbt", dependencies_sbt(ami :: dependencies))
           , ("dependencies_class", dependencies_class(ami :: dependencies))
           , ("tool_version_sbt", ToolVersion(tool_version).forSbt)
