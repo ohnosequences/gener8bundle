@@ -23,7 +23,7 @@ object TestOnInstance {
     }
 
     if (instances.isEmpty) {
-      println("Couldn't access instance for testing")
+      println("Couldn't launch an instance for testing")
       return 1
     }
     val instance = instances.head
@@ -35,13 +35,13 @@ object TestOnInstance {
       Thread sleep 1000; print(".")
     }; println("ok!")
 
-    val addr = instance.getPublicDNS().get
-    println("Instance address: " + addr)
-    
     print("Instance status ckecks...")
     while (instance.getStatus() != Some(InstanceStatus("ok","ok"))) {
       Thread sleep 1000; print(".")
     }; println("ok!")
+
+    val addr = instance.getPublicDNS().get
+    println("Instance address: " + addr)
 
     return 0
   }

@@ -12,13 +12,12 @@ scalaVersion := "2.10.0"
 
 scalaBinaryVersion := "2.10.0"
 
-publishMavenStyle := true
+publishMavenStyle := false
 
-publishTo <<= version { (v: String) =>
-  if (v.trim.endsWith("SNAPSHOT"))
-    Some(Resolver.file("local-snapshots", file("artifacts/snapshots.era7.com")))
-  else
-    Some(Resolver.file("local-releases", file("artifacts/releases.era7.com")))
+publishTo <<= (isSnapshot, s3resolver) { 
+                (snapshot,   resolver) => 
+  val prefix = if (snapshot) "snapshots" else "releases"
+  resolver("Era7 "+prefix+" S3 bucket", "s3://"+prefix+".era7.com")
 }
 
 resolvers ++= Seq (

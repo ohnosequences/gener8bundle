@@ -43,7 +43,7 @@ object App {
   /** Shared by the launched version and the runnable version,
    * returns the process status code */
   def run(args: Array[String]): Int = {
-    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.9.1") {
+    val argsParser = new scopt.immutable.OptionParser[Config]("gener8bundle", "0.10.0") {
       def options = Seq(
         flag("p", "prefill", "Creates json configs with given names prefilled with default values") {
           (c: Config) => c.copy(prefill = true)
@@ -82,17 +82,14 @@ object App {
         import org.json4s.JsonDSL._
         val bd = s"""{
     "name": "$jname",
-    "bundle_version": "0.1.0-SNAPSHOT",
     "tool_version": "",
-    "description": "",
+    "description": "New bundle for $jname tool",
     "org": "ohnosequences",
-    "publish_private": true,
-    "scala_version": "2.10.0",
-    "statika_version": "0.8.+",
+    "is_private": true,
     "ami": {
         "name": "ami-44939930",
         "tool_version": "2013.03",
-        "bundle_version": "0.3.+"
+        "bundle_version": "0.5.2"
     },
     "dependencies": []
 }"""

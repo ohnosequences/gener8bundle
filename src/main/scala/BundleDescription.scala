@@ -29,14 +29,10 @@ object ConfigDescription {
 
   case class BundleDescription(
       name: String
-    , publish_private: Boolean
+    , is_private: Boolean
     , description: Option[String]
     , org: Option[String]
-    , bundle_version: Option[String]
     , tool_version: Option[String]
-    , scala_version: Option[String]
-    , statika_version: Option[String]
-    // , credentials: Option[String]
     , ami: BundleDependency
     , dependencies: List[BundleDependency]
     ) {
@@ -52,22 +48,19 @@ object ConfigDescription {
     def toSeq: Seq[String] = {
       def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
       def opt(k: String, v: Option[String]) = v.toList.map((k, _))
+      val tv = ToolVersion(tool_version)
+      val tvSbt = tv.forSbt.getOrElse("")
+      val tvClass = tv.forClass.getOrElse("")
 
-      (Seq( ("name", name)
-          , ("private", publish_private.toString)
-          , ("class_name", className(name))
-          , ("ami", className(ami.forClass))
+      (Seq( ("name", name + tvSbt)
+          , ("class_name", className(name) + tvClass)
+          , ("is_private", is_private.toString)
+          , ("ami", ami.forClass)
           ) ++
-      (Seq( ("bundle_version", bundle_version)
-          , ("description", nonEmpty(description))
-          , ("org", org)
-          , ("scala_version", scala_version)
-          , ("statika_version", statika_version)
-          // , ("credentials", credentials)
+      (Seq( ("description", nonEmpty(description))
+          , ("org", nonEmpty(org))
           , ("dependencies_sbt", dependencies_sbt(ami :: dependencies))
           , ("dependencies_class", dependencies_class(ami :: dependencies))
-          , ("tool_version_sbt", ToolVersion(tool_version).forSbt)
-          , ("tool_version_class", ToolVersion(tool_version).forClass)
           ) flatMap { case (k,v) => opt(k,v) })
       ) map { case (k,v) => format(k,v) }
     }
