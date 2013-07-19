@@ -12,3 +12,4 @@
   maven-central
   era7-ivy-releases: http://releases.era7.com.s3.amazonaws.com, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]
   era7-maven-releases: http://releases.era7.com.s3.amazonaws.com
+
