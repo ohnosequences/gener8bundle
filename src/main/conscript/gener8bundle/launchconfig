@@ -10,4 +10,4 @@
   typesafe-ivy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]
   sonatype-oss-releases: https://oss.sonatype.org/content/repositories/releases/
   maven-central
-  era7-releases: http://releases.era7.com.s3.amazonaws.com
+  era7-releases: http://releases.era7.com.s3.amazonaws.com, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]
