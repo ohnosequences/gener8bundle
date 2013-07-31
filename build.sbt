@@ -1,6 +1,4 @@
 import sbtrelease._
-import ReleaseStateTransformations._
-import gener8bundleBuild._
 
 seq(conscriptSettings :_*)
 
@@ -8,16 +6,14 @@ name := "gener8bundle"
 
 organization := "ohnosequences"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.2"
 
-scalaBinaryVersion := "2.10.0"
+scalaBinaryVersion := "2.10.2"
 
-publishMavenStyle := false
-
-publishTo <<= (isSnapshot, s3resolver) { 
-                (snapshot,   resolver) => 
+publishTo <<= (isSnapshot, s3credentials) { 
+                (snapshot,   credentials) => 
   val prefix = if (snapshot) "snapshots" else "releases"
-  resolver("Era7 "+prefix+" S3 bucket", "s3://"+prefix+".era7.com")
+  credentials map s3resolver("Era7 "+prefix+" S3 bucket", "s3://"+prefix+".era7.com")
 }
 
 resolvers ++= Seq (
@@ -32,18 +28,24 @@ libraryDependencies ++= Seq (
   "org.json4s" % "json4s-native_2.10" % "3.1.0"
 , "ohnosequences" % "aws-scala-tools_2.10" % "0.2.3"
 , "org.rogach" % "scallop_2.10" % "0.9.2"
+// , "ohnosequences" % "giter8-lib_2.10" % "0.6.0"
 )
 
 scalacOptions ++= Seq(
   "-deprecation"
 , "-unchecked"
-//, "-feature"
+, "-feature"
+, "-language:reflectiveCalls"
+, "-language:implicitConversions"
+, "-language:existentials"
 )
+
+// sbt-release settings
+
+releaseSettings
 
 // sbt-buildinfo settings
 
 buildInfoSettings
 
 sourceGenerators in Compile <+= buildInfo
-
-buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion)

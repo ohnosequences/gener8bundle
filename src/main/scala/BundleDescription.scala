@@ -33,7 +33,6 @@ object ConfigDescription {
     , description: Option[String]
     , org: Option[String]
     , tool_version: Option[String]
-    , ami: BundleDependency
     , dependencies: List[BundleDependency]
     ) {
 
@@ -55,12 +54,11 @@ object ConfigDescription {
       (Seq( ("name", name + tvSbt)
           , ("class_name", className(name) + tvClass)
           , ("is_private", is_private.toString)
-          , ("ami", ami.forClass)
           ) ++
       (Seq( ("description", nonEmpty(description))
           , ("org", nonEmpty(org))
-          , ("dependencies_sbt", dependencies_sbt(ami :: dependencies))
-          , ("dependencies_class", dependencies_class(ami :: dependencies))
+          , ("dependencies_sbt", dependencies_sbt(dependencies))
+          , ("dependencies_class", dependencies_class(dependencies))
           ) flatMap { case (k,v) => opt(k,v) })
       ) map { case (k,v) => format(k,v) }
     }

@@ -18,7 +18,7 @@ import buildinfo._
 
 case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
-  version("%s %s" format (BuildInfo.name, BuildInfo.version))
+  version(s"${BuildInfo.name} ${BuildInfo.version}")
 
   val json = new Subcommand("json") {
 
@@ -78,7 +78,11 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
           descr = "Amazon Machine Image (AMI) ID"
         , default = Some("ami-44939930")
         )
-    // TODO: add validation of the format
+
+    val distribution = opt[String](
+          descr = "Statika distribution"
+        , default = Some("AmazonLinux")
+        )
 
     val keypair = opt[String](
           descr = "Name of keypair for the later ssh access"
@@ -134,12 +138,7 @@ object App {
     "tool_version": "",
     "description": "Statika bundle for the $jname tool",
     "org": "ohnosequences",
-    "is_private": true,
-    "ami": {
-        "name": "ami-44939930",
-        "tool_version": "2013.03",
-        "bundle_version": "0.5.2"
-    },
+    "is_private": false,
     "dependencies": []
 }"""
         val file = new File(jname+".json")
@@ -183,6 +182,7 @@ object App {
             , "--artifact=" + config.apply.artifact()
             , "--class_name=" + config.apply.name()
             , "--version=" + config.apply.artifactVersion()
+            , "--distribution=" + config.apply.distribution()
             )
         println(g8cmd.mkString("  "))
 

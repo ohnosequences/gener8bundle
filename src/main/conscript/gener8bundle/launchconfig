@@ -1,10 +1,10 @@
 [app]
-  version: 0.11.0
+  version: 0.12.0-SNAPSHOT
   org: ohnosequences
   name: gener8bundle
   class: ohnosequences.statika.gener8bundle.App
 [scala]
-  version: 2.10.0
+  version: 2.10.2
 [repositories]
   local
   typesafe-ivy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]

@@ -12,11 +12,6 @@ The configuration format is a json object which looks like this:
     "description": "Statika bundle for the foo tool",
     "org": "ohnosequences",
     "is_private": true,
-    "ami": {
-        "name": "ami-44939930",
-        "tool_version": "2013.03",
-        "bundle_version": "0.5.2"
-    },
     "dependencies": []
 }
 ```
@@ -26,8 +21,7 @@ The configuration format is a json object which looks like this:
 * `description: Option[String]` — optional description
 * `org: Option[String]` — name of organization which will be used in the package and the artifact names
 * `is_private: Boolean` — if true, bundle will use private S3 buckets for publishing
-* `ami: BundleDependency` — AMI bundle which will be used
-* `dependencies: List[BundleDependency]` — optional list of dependencies, which have the same format as `ami`:
+* `dependencies: List[BundleDependency]` — optional list of dependencies:
   + `name: String` — name of dependency
   + `tool_version: Option[String]` — it's tool version
   + `bundle_version: Option[String]` — it's version
