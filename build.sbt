@@ -29,6 +29,7 @@ libraryDependencies ++= Seq (
 , "ohnosequences" % "aws-scala-tools_2.10" % "0.2.3"
 , "org.rogach" % "scallop_2.10" % "0.9.2"
 // , "ohnosequences" % "giter8-lib_2.10" % "0.6.0"
+, "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2"
 )
 
 scalacOptions ++= Seq(

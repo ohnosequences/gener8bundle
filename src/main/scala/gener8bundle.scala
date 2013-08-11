@@ -50,18 +50,18 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   val apply = new Subcommand("apply") {
 
-    mainOptions = Seq(name, artifact, artifactVersion, credentials)
+    mainOptions = Seq(sbtDeps, bundleObject, distObject, credentials)
 
-    val name = opt[String](
+    val bundleObject = opt[String](
           descr = "Bundle object name"
         )
 
-    val artifact = opt[String](
-          descr = "Bundle artifact name"
+    val distObject = opt[String](
+          descr = "Distribution object name"
         )
 
-    val artifactVersion = opt[String](
-          descr = "Bundle version"
+    val sbtDeps = opt[String](
+          descr = "sbt file with bundle and distribution dependencies"
         )
 
     val credentials = opt[String](
@@ -79,17 +79,12 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
         , default = Some("ami-44939930")
         )
 
-    val distribution = opt[String](
-          descr = "Statika distribution"
-        , default = Some("AmazonLinux")
-        )
-
     val keypair = opt[String](
           descr = "Name of keypair for the later ssh access"
         , default = Some("statika-launcher")
         )
 
-    val instanceProfile = opt[String](
+    val profile = opt[String](
           descr = "Instance profile (for roles)"
         , default = Some("arn:aws:iam::857948138625:instance-profile/statika-tester")
         )
@@ -174,23 +169,36 @@ object App {
 
       case Some(config.apply) => { // applying bundle to an instance
 
+        println("\n -- Generating user-script -- \n")
 
-        println("\n -- Constructing giter8 command -- \n")
+        import scalax.file.Path
 
-        val g8cmd = Seq("g8", "ohnosequences/statika-bundle.g8"
-            , "-b", "bundle-user-script"
-            , "--artifact=" + config.apply.artifact()
-            , "--class_name=" + config.apply.name()
-            , "--version=" + config.apply.artifactVersion()
-            , "--distribution=" + config.apply.distribution()
-            )
-        println(g8cmd.mkString("  "))
+        val dir = Path.createTempDirectory()
 
+        (dir \ "build.sbt").writeStrings(Seq(
+          """ name := "userscript" """
+        , """ scalaVersion := "2.10.2" """
+        , """ publishTo := None """
+        ), "\n\n")
 
-        println("\n -- Running giter8 -- \n")
+        if(new File(config.apply.sbtDeps()).exists) {
+          (dir \ "deps.sbt").writeStrings(Path(config.apply.sbtDeps()).lines(includeTerminator = true))
+        } else {
+          println("Error: file with dependencies description doesn't exist")
+          return 1
+        }
 
-        val g8result = g8cmd.!
-        if (g8result != 0) return g8result
+        (dir \ "project" \ "plugins.sbt").writeStrings(Seq(
+          """ resolvers += "Era7 Releases" at "http://releases.era7.com.s3.amazonaws.com" """
+        , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.4.0") """
+        , """ addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.9.0") """
+        ), "\n\n")
+
+        (dir \ "src" \ "main" \ "scala" \ "userscript.scala").writeStrings(Seq(
+          """object userscript extends App {"""
+        , "print(", config.apply.distObject(), ".userScript(", config.apply.bundleObject(), "))"
+        , """}"""
+        ))
 
         // Adding method to run commands from a given path
         implicit class PBAt(cmd: Seq[String]) {
@@ -198,13 +206,14 @@ object App {
             Process(cmd, new java.io.File(path), "" -> "")
         }
 
+        val buildresult = (Seq("sbt", "; add-start-script-tasks ; start-script") @@ dir.path).!
 
-        println("\n -- Generating user-script -- \n")
+        if(buildresult != 0) {
+          println("Couldn't build the project for userscript generation")
+          return 1
+        }
 
-        val buildResult = (Seq("sbt", "start-script") @@ "bundle-user-script").!
-        if (buildResult != 0) return buildResult
-
-        val userscript = (Seq("./target/start") @@ "bundle-user-script").!!
+        val userscript = (Seq("./target/start") @@ dir.path).!!
 
 
         println("\n -- Launching instances -- \n")
@@ -217,7 +226,7 @@ object App {
           , keyName = config.apply.keypair()
           , deviceMapping = Map()
           , userData = userscript
-          , instanceProfileARN = Some(config.apply.instanceProfile())
+          , instanceProfileARN = Some(config.apply.profile())
           )
 
         val instances = ec2.runInstancesAndWait(config.apply.number(), specs)

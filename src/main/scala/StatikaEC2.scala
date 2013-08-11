@@ -22,7 +22,11 @@ object StatikaEC2 {
       ec2.runInstances(number, specs) map { inst =>
         println("Launched an instance with id: " + inst.getInstanceId())
         waitForInit(inst)
-        println("Instance address: " + inst.getPublicDNS())
+        val addr = inst.getPublicDNS()
+        addr match {
+          case Some(a) => println("Instance address: "+a)
+          case _ => println("Error: couldn't get instance address")
+        }
         inst
       }
     }
