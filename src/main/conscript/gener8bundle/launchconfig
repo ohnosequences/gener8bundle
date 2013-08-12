@@ -1,13 +1,16 @@
 [app]
-  version: 0.6.3
+  version: 0.12.0-SNAPSHOT
   org: ohnosequences
   name: gener8bundle
-  class: ohnosequences.statica.gener8bundle.App
+  class: ohnosequences.statika.gener8bundle.App
 [scala]
-  version: 2.9.1
+  version: 2.10.2
 [repositories]
   local
   typesafe-ivy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]
   sonatype-oss-releases: https://oss.sonatype.org/content/repositories/releases/
   maven-central
-  era7-releases: http://releases.era7.com.s3.amazonaws.com
+  era7-ivy-releases: http://releases.era7.com.s3.amazonaws.com, [organization]/[module]/[revision]/[type]s/[artifact](-[classifier]).[ext]
+  era7-maven-releases: http://releases.era7.com.s3.amazonaws.com
+  era7-maven-snapshots: http://snapshots.era7.com.s3.amazonaws.com
+
