@@ -41,8 +41,8 @@ Then, you need to install [giter8](https://github.com/n8han/giter8) templating t
 cs n8han/giter8
 ```
 
-And finally the gener8bundle itself:
+And finally the tool itself:
 
 ```bash
-cs ohnosequences/gener8bundle/0.12.0
+cs ohnosequences/statika-cli
 ```
