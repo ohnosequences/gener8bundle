@@ -1,5 +1,5 @@
 [app]
-  version: 0.12.0-SNAPSHOT
+  version: 0.12.0
   org: ohnosequences
   name: gener8bundle
   class: ohnosequences.statika.gener8bundle.App
