@@ -2,7 +2,7 @@ import sbtrelease._
 
 seq(conscriptSettings :_*)
 
-name := "gener8bundle"
+name := "statika-cli"
 
 organization := "ohnosequences"
 
@@ -13,7 +13,7 @@ scalaBinaryVersion := "2.10.2"
 publishTo <<= (isSnapshot, s3credentials) { 
                 (snapshot,   credentials) => 
   val prefix = if (snapshot) "snapshots" else "releases"
-  credentials map s3resolver("Era7 "+prefix+" S3 bucket", "s3://"+prefix+".era7.com")
+  credentials map S3Resolver("Era7 "+prefix+" S3 bucket", "s3://"+prefix+".era7.com").toSbtResolver
 }
 
 resolvers ++= Seq (
