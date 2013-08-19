@@ -1,8 +1,6 @@
-resolvers ++= Seq (
-  "Era7 Releases" at "http://releases.era7.com.s3.amazonaws.com"
-)
+resolvers += Resolver.url("Era7 ivy Releases", url("http://releases.era7.com.s3.amazonaws.com"))(Resolver.ivyStylePatterns)
 
-addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.4.0")
+addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.5.0")
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "0.7")
 
