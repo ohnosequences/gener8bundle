@@ -1,4 +1,4 @@
-package ohnosequences.statika.gener8bundle
+package ohnosequences.statika.cli
 
 // This script parses given json bundle configuration,
 // constructs parameters for giter8 and calls it

@@ -1,4 +1,4 @@
-package ohnosequences.statika.gener8bundle
+package ohnosequences.statika.cli
 
 object ConfigDescription {
 

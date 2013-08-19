@@ -1,8 +1,8 @@
 [app]
-  version: 0.12.0
+  version: 0.13.0
   org: ohnosequences
-  name: gener8bundle
-  class: ohnosequences.statika.gener8bundle.App
+  name: statika-cli
+  class: ohnosequences.statika.cli.App
 [scala]
   version: 2.10.2
 [repositories]
