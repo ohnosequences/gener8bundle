@@ -1,63 +1,43 @@
 package ohnosequences.statika.cli
 
-object ConfigDescription {
-
-  case class ToolVersion(v: Option[String]) {
-    def forSbt:   Option[String] = nonEmpty(v).map("." + _)
-    def forClass: Option[String] = nonEmpty(v).map("_" + _.replaceAll("\\.", "_"))
-  }
+object BundleDescription {
 
   def nonEmpty(s: Option[String]) = if (s == Some("")) None else s
 
-  def className(s: String) = s.split("""\W""").map(_.capitalize).mkString
+  def artifactName(s: String) = s.toLowerCase.replaceAll("""\s+""", "-")
+  def objectName(s: String) = s.split("""\W""").map(_.capitalize).mkString
 
-  case class BundleDependency(
-      name: String
-    , tool_version: Option[String]
-    , bundle_version: Option[String]
-    ) {
-    val tv = ToolVersion(tool_version)
-    val tvSbt = tv.forSbt.getOrElse("")
-    val tvClass = tv.forClass.getOrElse("")
-    val artifactName = name.toLowerCase.replaceAll("""\s+""", "-")
+  case class BundleEntity(org: String, name: String, version: String)
 
-    val forSbt = "\"ohnosequences\" %% \"" + 
-                    artifactName + tvSbt + "\" % \"" + 
-                    bundle_version.getOrElse("0.1.0") + "\""
-    val forClass = className(name) + tvClass
-  }
-
-  case class BundleDescription(
-      name: String
-    , is_private: Boolean
-    , description: Option[String]
-    , org: Option[String]
-    , tool_version: Option[String]
-    , dependencies: List[BundleDependency]
+  case class DescriptionFormat(
+      bundle: BundleEntity
+    , sbtStatikaPlugin: BundleEntity
+    , dependencies: List[BundleEntity] = List()
     ) {
 
-    def dependencies_sbt(l: List[BundleDependency]): Option[String] = 
+    def dependencies_sbt(l: List[BundleEntity]): Option[String] = 
       if (l.isEmpty) None
-      else Some(l.map(_.forSbt).mkString("libraryDependencies ++= Seq(", ", ", ")"))
+      else Some(l.map{b => 
+        s""" "${b.org}" %% "${artifactName(b.name)}" % "${b.version}" """
+        }.mkString("libraryDependencies ++= Seq(", ", ", ")"))
 
-    def dependencies_class(l: List[BundleDependency]): Option[String] = 
-      if (l.isEmpty) Some("HNil: HNil")
-      else Some(l.map(_.forClass).mkString("", " :: ", " :: HNil"))
+    def dependencies_class(l: List[BundleEntity]): Option[String] = 
+      if (l.isEmpty) None
+      else Some(l.map{b => objectName(b.name)}.mkString("", " :: ", " :: HNil"))
 
     def toSeq: Seq[String] = {
       def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
       def opt(k: String, v: Option[String]) = v.toList.map((k, _))
-      val tv = ToolVersion(tool_version)
-      val tvSbt = tv.forSbt.getOrElse("")
-      val tvClass = tv.forClass.getOrElse("")
 
-      (Seq( ("name", name + tvSbt)
-          , ("class_name", className(name) + tvClass)
-          , ("is_private", is_private.toString)
+      val sp = sbtStatikaPlugin
+
+      (Seq( ("name", artifactName(bundle.name))
+          , ("object_name", objectName(bundle.name))
+          , ("version", bundle.version)
+          , ("org", bundle.org)
+          , ("sbt_statika_plugin", s""" "${sp.org}" % "${artifactName(sp.name)}" % "${sp.version}" """)
           ) ++
-      (Seq( ("description", nonEmpty(description))
-          , ("org", nonEmpty(org))
-          , ("dependencies_sbt", dependencies_sbt(dependencies))
+      (Seq( ("dependencies_sbt", dependencies_sbt(dependencies))
           , ("dependencies_class", dependencies_class(dependencies))
           ) flatMap { case (k,v) => opt(k,v) })
       ) map { case (k,v) => format(k,v) }

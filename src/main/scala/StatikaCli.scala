@@ -103,13 +103,14 @@ object App {
   import java.io._
   import scala.io._
   import scala.sys.process._
+  import scalax.file.Path
 
   import org.json4s._
   import org.json4s.native.JsonMethods._
 
   import ohnosequences.awstools.ec2._
   import StatikaEC2._
-  import ConfigDescription._
+  import BundleDescription._
 
   /** Standard runnable class entrypoint */
   def main(args: Array[String]) {
@@ -127,20 +128,22 @@ object App {
       case Some(config.json) => { // generating prefilled json conf
 
         val jname = config.json.name() stripSuffix ".json"
-        import org.json4s.JsonDSL._
-        val bd = s"""{
-    "name": "$jname",
-    "tool_version": "",
-    "description": "Statika bundle for the $jname tool",
-    "org": "ohnosequences",
-    "is_private": false,
-    "dependencies": []
-}"""
+
+        import org.json4s.native.Serialization
+        import org.json4s.native.Serialization.{read, write}
+        implicit val formats = Serialization.formats(NoTypeHints)
+
+        val json = write(DescriptionFormat(
+            bundle = BundleEntity("ohnosequences", jname, "0.1.0-SNAPSHOT")
+          , sbtStatikaPlugin = BundleEntity("ohnosequences", "sbt-statika-ohnosequences", "0.1.0")
+          ))
+        val text = pretty(render(parse(json)))
+
         val file = new File(jname+".json")
         if (file.exists) {
           println("Error: file "+ jname +".json already exists")
           return 1
-        } else Some(new PrintWriter(file)).foreach{p => p.write(bd); p.close}
+        } else Path(file).writeStrings(Seq(text))
         return 0
 
       }
@@ -152,7 +155,7 @@ object App {
         val j = Source.fromFile(config.generate.jsonFile()).mkString
         // parsing it
         val jsonConf = parse(j)
-        val bd = jsonConf.extract[BundleDescription]
+        val bd = jsonConf.extract[DescriptionFormat]
 
         val g8args: Seq[String] =
           config.generate.template() +: 
@@ -170,8 +173,6 @@ object App {
       case Some(config.apply) => { // applying bundle to an instance
 
         println("\n -- Generating user-script -- \n")
-
-        import scalax.file.Path
 
         val dir = Path.createTempDirectory()
 
