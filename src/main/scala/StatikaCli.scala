@@ -22,6 +22,11 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   val json = new Subcommand("json") {
 
+    val organization = opt[String](
+          default = Some("ohnosequences")
+        , descr = "Organization for the bundle"
+        )
+
     val name = trailArg[String](
           descr = "Creates json config file with given name prefilled with default values"
         )
@@ -133,9 +138,11 @@ object App {
         import org.json4s.native.Serialization.{read, write}
         implicit val formats = Serialization.formats(NoTypeHints)
 
+        val o = config.json.organization()
+
         val json = write(DescriptionFormat(
-            bundle = BundleEntity("ohnosequences", jname, "0.1.0-SNAPSHOT")
-          , sbtStatikaPlugin = BundleEntity("ohnosequences", "sbt-statika-ohnosequences", "0.1.0")
+            bundle = BundleEntity(o, jname, "0.1.0-SNAPSHOT")
+          , sbtStatikaPlugin = BundleEntity(o, "sbt-statika-"+o, "0.1.1")
           ))
         val text = pretty(render(parse(json)))
 
