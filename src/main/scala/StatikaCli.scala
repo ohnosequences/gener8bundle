@@ -142,7 +142,7 @@ object App {
 
         val json = write(DescriptionFormat(
             bundle = BundleEntity(o, jname, "0.1.0-SNAPSHOT")
-          , sbtStatikaPlugin = BundleEntity(o, "sbt-statika-"+o, "0.1.1")
+          , sbtStatikaPlugin = BundleEntity(o, "sbt-statika-"+o, "0.2.0")
           ))
         val text = pretty(render(parse(json)))
 
