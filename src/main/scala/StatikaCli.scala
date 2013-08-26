@@ -91,7 +91,7 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
     val profile = opt[String](
           descr = "Instance profile (for roles)"
-        , default = Some("arn:aws:iam::857948138625:instance-profile/statika-tester")
+        , default = Some("arn:aws:iam::857948138625:instance-profile/statika-private-resolver")
         )
 
     val number = opt[Int](
@@ -142,7 +142,7 @@ object App {
 
         val json = write(DescriptionFormat(
             bundle = BundleEntity(o, jname, "0.1.0-SNAPSHOT")
-          , sbtStatikaPlugin = BundleEntity(o, "sbt-statika-"+o, "0.2.0")
+          , sbtStatikaPlugin = BundleEntity(o, "sbt-statika-"+o, "0.2.1")
           ))
         val text = pretty(render(parse(json)))
 
@@ -198,7 +198,7 @@ object App {
 
         (dir \ "project" \ "plugins.sbt").writeStrings(Seq(
           """ resolvers += "Era7 Releases" at "http://releases.era7.com.s3.amazonaws.com" """
-        , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.4.0") """
+        , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.5.1") """
         , """ addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.9.0") """
         ), "\n\n")
 
