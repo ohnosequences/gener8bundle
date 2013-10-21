@@ -24,11 +24,7 @@ object StatikaEC2 {
         waitForInit(inst)
         val addr = inst.getPublicDNS()
         addr match {
-          case Some(a) => {
-            println("Instance address: "+a)
-            println("Command to connect to the instance:")
-            println("ssh -i "+specs.keyName+".pem ec2-user@"+a)
-          }
+          case Some(a) => println("Instance address: "+a)
           case _ => println("Error: couldn't get instance address")
         }
         inst

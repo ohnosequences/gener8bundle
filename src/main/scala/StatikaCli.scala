@@ -198,7 +198,7 @@ object App {
 
         (dir \ "project" \ "plugins.sbt").writeStrings(Seq(
           """ resolvers += "Era7 Releases" at "http://releases.era7.com.s3.amazonaws.com" """
-        , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.5.1") """
+        , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.7.0") """
         , """ addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.9.0") """
         ), "\n\n")
 

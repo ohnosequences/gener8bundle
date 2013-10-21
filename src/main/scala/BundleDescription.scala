@@ -14,7 +14,6 @@ object BundleDescription {
 
   case class DescriptionFormat(
       bundle: BundleEntity
-    , sbtStatikaPlugin: BundleEntity
     , dependencies: List[BundleEntity] = List()
     ) {
 
@@ -26,7 +25,7 @@ object BundleDescription {
 
     def dependencies_class(l: List[BundleEntity]): Option[String] = 
       if (l.isEmpty) None
-      else Some(l.map{ b => b.obj }.mkString("", " :: ", " :: HNil"))
+      else Some(l.map{ b => b.obj }.mkString("", " :+: ", " :+: ∅"))
 
     def toSeq: Seq[String] = {
       def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
@@ -38,7 +37,6 @@ object BundleDescription {
           , ("object_name", bundle.obj)
           , ("version", bundle.version)
           , ("org", bundle.org)
-          , ("sbt_statika_plugin", s""" "${sp.org}" % "${sp.artifact}" % "${sp.version}" """)
           ) ++
       (Seq( ("dependencies_sbt", dependencies_sbt(dependencies))
           , ("dependencies_class", dependencies_class(dependencies))
