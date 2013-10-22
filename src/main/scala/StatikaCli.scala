@@ -140,10 +140,7 @@ object App {
 
         val o = config.json.organization()
 
-        val json = write(DescriptionFormat(
-            bundle = BundleEntity(o, jname, "0.1.0-SNAPSHOT")
-          , sbtStatikaPlugin = BundleEntity(o, "sbt-statika-"+o, "0.2.1")
-          ))
+        val json = write(DescriptionFormat(BundleEntity(o, jname, "0.1.0-SNAPSHOT")))
         val text = pretty(render(parse(json)))
 
         val file = new File(jname+".json")
