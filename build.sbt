@@ -8,7 +8,7 @@ organization := "ohnosequences"
 
 scalaVersion := "2.10.3"
 
-scalaBinaryVersion := "2.10"
+scalaBinaryVersion := "2.10.3"
 
 bucketSuffix := "era7.com"
 
