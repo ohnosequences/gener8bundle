@@ -31,8 +31,6 @@ object BundleDescription {
       def format(k: String, v: String) = "--" + k + "=" + v.toString.replaceAll(" ", "\\ ")
       def opt(k: String, v: Option[String]) = v.toList.map((k, _))
 
-      val sp = sbtStatikaPlugin
-
       (Seq( ("name", bundle.artifact)
           , ("object_name", bundle.obj)
           , ("version", bundle.version)
