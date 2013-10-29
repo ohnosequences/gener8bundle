@@ -10,6 +10,8 @@ scalaVersion := "2.10.3"
 
 scalaBinaryVersion := "2.10.3"
 
+publishMavenStyle := true
+
 bucketSuffix := "era7.com"
 
 

@@ -182,7 +182,7 @@ object App {
 
         (dir \ "build.sbt").writeStrings(Seq(
           """ name := "userscript" """
-        , """ scalaVersion := "2.10.2" """
+        , """ scalaVersion := "2.10.3" """
         , """ publishTo := None """
         ), "\n\n")
 
@@ -196,7 +196,7 @@ object App {
         (dir \ "project" \ "plugins.sbt").writeStrings(Seq(
           """ resolvers += "Era7 Releases" at "http://releases.era7.com.s3.amazonaws.com" """
         , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.7.0") """
-        , """ addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.9.0") """
+        , """ addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.10.0") """
         ), "\n\n")
 
         (dir \ "src" \ "main" \ "scala" \ "userscript.scala").writeStrings(Seq(
@@ -234,7 +234,9 @@ object App {
           , instanceProfileARN = Some(config.apply.profile())
           )
 
-        val instances = ec2.runInstancesAndWait(config.apply.number(), specs)
+        val instances = ec2.applyAndWait(config.apply.bundleObject(), specs) 
+          //, config.apply.number())
+          //runInstancesAndWait(config.apply.number(), specs)
 
         if (instances.length == config.apply.number()) return 0
         else return 1
