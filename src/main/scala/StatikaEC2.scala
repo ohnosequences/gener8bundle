@@ -43,13 +43,15 @@ object StatikaEC2 {
         inst.createTag(Ec2Tag("Name", name))
         println(name+" ("+id+"): launched")
 
+        while(status != Some("preparing")) { Thread sleep 2000 }
+        println(name+" ("+id+"): url: "+inst.getPublicDNS().getOrElse("..."))
+
         while({val s = status; s != Some("failure") && s != Some("success")}) {
           val s = status
           if (s != previous) println(name+" ("+id+"): "+s.getOrElse("..."))
           previous = s
           Thread sleep 3000
         }
-        println(name+" ("+id+"): "+inst.getPublicDNS().getOrElse("..."))
         if (status == Some("success")) Some(inst)
         else None
       } flatten
