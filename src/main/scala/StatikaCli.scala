@@ -81,7 +81,7 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
     val ami = opt[String](
           descr = "Amazon Machine Image (AMI) ID"
-        , default = Some("ami-44939930")
+        , default = Some("ami-149f7863")
         )
 
     val keypair = opt[String](
