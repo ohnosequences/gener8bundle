@@ -1,4 +1,4 @@
-## Statika CLI (Comman Line Interface)
+## Statika CLI (Command Line Interface)
 
 This is a command line tool for
 * generating [statika](https://github.com/ohnosequences/statika) bundles from a [template](https://github.com/ohnosequences/statika-bundle.g8) and a json-configuration.
