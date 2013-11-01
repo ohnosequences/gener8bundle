@@ -15,6 +15,10 @@ case class Exit(val code: Int) extends xsbti.Exit
 
 import org.rogach.scallop._
 import buildinfo._
+import java.io._
+import scala.io._
+import scala.sys.process._
+
 
 case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
@@ -30,6 +34,11 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
     val name = trailArg[String](
           descr = "Creates json config file with given name prefilled with default values"
         )
+    validate (name) { n =>
+        val file = new File(n.stripSuffix(".json")+".json")
+        if (file.exists) Left(s"File ${n}.json already exists")
+        else Right(Unit)
+    }
 
   }
 
@@ -55,18 +64,18 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   val apply = new Subcommand("apply") {
 
-    mainOptions = Seq(sbtDeps, bundleObject, distObject, credentials)
+    mainOptions = Seq(fatJar, bundleObject, distObject, credentials)
 
-    val bundleObject = opt[String](
-          descr = "Bundle object name"
+    val fatJar = opt[String](
+          descr = "Fat jar file of the distribution you are going to use"
         )
 
     val distObject = opt[String](
           descr = "Distribution object name"
         )
 
-    val sbtDeps = opt[String](
-          descr = "sbt file with bundle and distribution dependencies"
+    val bundleObject = opt[String](
+          descr = "Bundle object name"
         )
 
     val credentials = opt[String](
@@ -79,18 +88,13 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
         , default = Some("c1.medium")
         )
 
-    val ami = opt[String](
-          descr = "Amazon Machine Image (AMI) ID"
-        , default = Some("ami-149f7863")
-        )
-
     val keypair = opt[String](
-          descr = "Name of keypair for the later ssh access"
+          descr = "Name of keypair for the later ssh access to the launched instance"
         , default = Some("statika-launcher")
         )
 
     val profile = opt[String](
-          descr = "Instance profile (for roles)"
+          descr = "Instance profile (role) to access private dependencies (if any)"
         , default = Some("arn:aws:iam::857948138625:instance-profile/statika-private-resolver")
         )
 
@@ -105,11 +109,6 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
 object App {
 
-  import java.io._
-  import scala.io._
-  import scala.sys.process._
-  import scalax.file.Path
-
   import org.json4s._
   import org.json4s.native.JsonMethods._
 
@@ -117,13 +116,14 @@ object App {
   import StatikaEC2._
   import BundleDescription._
 
-  /** Standard runnable class entrypoint */
+  /* Standard runnable class entrypoint */
   def main(args: Array[String]) {
     System.exit(run(args))
   }
 
-  /** Shared by the launched version and the runnable version,
-   * returns the process status code */
+  /*  Shared by the launched version and the runnable version,
+      returns the process status code
+  */
   def run(args: Array[String]): Int = {
 
     val config = AppConf(args)
@@ -139,20 +139,14 @@ object App {
         implicit val formats = Serialization.formats(NoTypeHints)
 
         val o = config.json.organization()
-
         val json = write(DescriptionFormat(BundleEntity(o, jname, "0.1.0-SNAPSHOT")))
         val text = pretty(render(parse(json)))
 
-        val file = new File(jname+".json")
-        if (file.exists) {
-          println("Error: file "+ jname +".json already exists")
-          return 1
-        } else Path(file).writeStrings(Seq(text))
-        return 0
+        Seq("echo", text) #> new File(jname+".json") !
 
       }
 
-      case Some(config.generate) => { // constructing giter8 to create a bundle
+      case Some(config.generate) => { // constructing giter8 command to create a bundle
 
         implicit val formats = DefaultFormats
         // reading file
@@ -176,68 +170,35 @@ object App {
 
       case Some(config.apply) => { // applying bundle to an instance
 
-        println("\n -- Generating user-script -- \n")
+        def interpret(cmd: String): String = 
+          Seq("scala", "-cp", config.apply.fatJar(), "-e", cmd).!!
 
-        val dir = Path.createTempDirectory()
+        val userscript = interpret(
+            s"""print(${config.apply.distObject()}.userScript(${config.apply.bundleObject()}))"""
+          )
 
-        (dir \ "build.sbt").writeStrings(Seq(
-          """ name := "userscript" """
-        , """ scalaVersion := "2.10.3" """
-        , """ publishTo := None """
-        ), "\n\n")
-
-        if(new File(config.apply.sbtDeps()).exists) {
-          (dir \ "deps.sbt").writeStrings(Path(config.apply.sbtDeps()).lines(includeTerminator = true))
-        } else {
-          println("Error: file with dependencies description doesn't exist")
-          return 1
-        }
-
-        (dir \ "project" \ "plugins.sbt").writeStrings(Seq(
-          """ resolvers += "Era7 Releases" at "http://releases.era7.com.s3.amazonaws.com" """
-        , """ addSbtPlugin("ohnosequences" % "sbt-s3-resolver" % "0.7.0") """
-        , """ addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.10.0") """
-        ), "\n\n")
-
-        (dir \ "src" \ "main" \ "scala" \ "userscript.scala").writeStrings(Seq(
-          """object userscript extends App {"""
-        , "print(", config.apply.distObject(), ".userScript(", config.apply.bundleObject(), "))"
-        , """}"""
-        ))
-
-        // Adding method to run commands from a given path
-        implicit class PBAt(cmd: Seq[String]) {
-          implicit def @@(path: String): ProcessBuilder =
-            Process(cmd, new java.io.File(path), "" -> "")
-        }
-
-        val buildresult = (Seq("sbt", "; add-start-script-tasks ; start-script") @@ dir.path).!
-
-        if(buildresult != 0) {
-          println("Couldn't build the project for userscript generation")
-          return 1
-        }
-
-        val userscript = (Seq("./target/start") @@ dir.path).!!
-
-
-        println("\n -- Launching instances -- \n")
-
-        val ec2 = EC2.create(new File(config.apply.credentials()))
+        val ami = interpret(
+            s"""print(${config.apply.distObject()}.ami.id)"""
+          ).trim
 
         val specs = InstanceSpecs(
             instanceType = InstanceType.InstanceType(config.apply.instanceType())
-          , amiId = config.apply.ami()
+          , amiId = ami
           , keyName = config.apply.keypair()
           , deviceMapping = Map()
           , userData = userscript
           , instanceProfileARN = Some(config.apply.profile())
           )
 
-        val instances = ec2.applyAndWait(config.apply.bundleObject(), specs) 
-          //, config.apply.number())
-          //runInstancesAndWait(config.apply.number(), specs)
+        println(s"""Launching instances:
+          |type:        ${specs.instanceType}
+          |ami:         ${specs.amiId}
+          |keypair:     ${specs.keyName}
+          |profile ARN: ${specs.instanceProfileARN.getOrElse("None")}
+          |""".stripMargin)
 
+        val ec2 = EC2.create(new File(config.apply.credentials()))
+        val instances = ec2.applyAndWait(config.apply.bundleObject().split("\\.").last, specs) 
         if (instances.length == config.apply.number()) return 0
         else return 1
 
