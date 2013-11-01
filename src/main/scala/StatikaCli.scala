@@ -109,7 +109,7 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
     val profile = opt[String](
           descr = "Instance profile (role) to access private dependencies (if any)"
-        , default = None //Some("arn:aws:iam::857948138625:instance-profile/statika-private-resolver")
+        , default = Some("arn:aws:iam::857948138625:instance-profile/statika-private-resolver")
         )
 
     val number = opt[Int](
@@ -205,7 +205,7 @@ object App {
           , keyName = config.apply.keypair()
           , deviceMapping = Map()
           , userData = userscript
-          , instanceProfileARN = config.apply.profile.get
+          , instanceProfileARN = Some(config.apply.profile())
           )
 
         println(s"""Launching instances:
