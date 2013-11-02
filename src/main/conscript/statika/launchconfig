@@ -1,5 +1,5 @@
 [app]
-  version: 0.16.1
+  version: 0.17.0
   org: ohnosequences
   name: statika-cli
   class: ohnosequences.statika.cli.App

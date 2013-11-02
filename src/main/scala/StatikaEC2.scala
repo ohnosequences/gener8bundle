@@ -35,25 +35,26 @@ object StatikaEC2 {
     def applyAndWait(name: String, specs: InstanceSpecs, number: Int = 1): List[ec2.Instance] = {
       // TODO: run instances in parallel
       ec2.runInstances(number, specs) map { inst =>
-        def status: Option[String] = inst.getTagValue("statika-status") 
+        def status: String = inst.getTagValue("statika-status").getOrElse("...")
 
         val id = inst.getInstanceId()
-        var previous: Option[String] = None
+        var previous: String = ""
+        def printStatus(s: String) = println(name+" ("+id+"): "+s)
 
         inst.createTag(Ec2Tag("Name", name))
-        println(name+" ("+id+"): launched")
+        printStatus("launched")
 
-        while(status != Some("preparing")) { Thread sleep 2000 }
-        println(name+" ("+id+"): url: "+inst.getPublicDNS().getOrElse("..."))
+        while(status != "preparing") { Thread sleep 2000 }
+        printStatus("url: "+inst.getPublicDNS().getOrElse("..."))
 
-        while({val s = status; s != Some("failure") && s != Some("success")}) {
+        while({val s = status; s != "failure" && s != "success"}) {
           val s = status
-          if (s != previous) println(name+" ("+id+"): "+s.getOrElse("..."))
+          if (s != previous) printStatus(s)
           previous = s
           Thread sleep 3000
         }
-        if (status == Some("success")) Some(inst)
-        else None
+        printStatus(status)
+        if (status == "success") Some(inst) else None
       } flatten
     }
 
