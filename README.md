@@ -91,7 +91,7 @@ Assuming, that you have the bundle and the distribution containing it released, 
 
 Now, let's take for example an existing bundle and see how we can apply it. So the object names are
 
-* distribution: `ohnosequences.statika.distributions.AmazonLinux`
+* distribution: `ohnosequences.statika.distributions.StatikaDistribution`
 * bundle: `ohnosequences.statika.Velvet`
 
 #### Getting distribution fat jar
@@ -99,8 +99,8 @@ Now, let's take for example an existing bundle and see how we can apply it. So t
 When a distribution is released, a special fat-jar artifact is published. Distribution stores the address where it is published in it's metadata: 
 
 ```scala
-> ohnosequences.statika.distributions.AmazonLinux.metadata.artifactUrl
-s3://releases.era7.com/ohnosequences/statika-distributions_2.10/0.7.0/statika-distributions_2.10-0.7.0-fat.jar
+> ohnosequences.statika.distributions.StatikaDistribution.metadata.artifactUrl
+s3://releases.era7.com/ohnosequences/statika-distributions_2.10/0.8.0/statika-distributions_2.10-0.8.0-fat.jar
 ```
 
 So, when you know this address, you can go to the bucket and download it. If you have AWS command line tools installed, you can do it with
@@ -111,7 +111,7 @@ aws s3 cp <this url> dist.jar
 
 Now, let's assume that you have this fat jar saved in the `dist.jar` local file.
 
-> Alternatively, check out distribution's [github releases page](https://github.com/ohnosequences/statika-distributions/releases/v0.7.0) — it may also contain this jar attached to the release, so that you don't need to search for it's address.
+> Alternatively, check out distribution's [github releases page](https://github.com/ohnosequences/statika-distributions/releases/v0.8.0) — it may also contain this jar attached to the release, so that you don't need to search for it's address.
 
 #### Apply command
 
@@ -130,7 +130,7 @@ Now you can just use `apply` command:
 statika apply \
   --creds AwsCredentials.properties \
   --jar dist.jar \
-  --dist ohnosequences.statika.distributions.AmazonLinux \
+  --dist ohnosequences.statika.distributions.StatikaDistribution \
   --bundle ohnosequences.statika.Velvet
 ```
 
@@ -142,7 +142,7 @@ Another alternative is to save options to a file `apply-velvet.opts`:
 apply
 --creds AwsCredentials.properties
 --jar dist.jar
---dist ohnosequences.statika.distributions.AmazonLinux
+--dist ohnosequences.statika.distributions.StatikaDistribution
 --bundle ohnosequences.statika.Velvet
 ```
 
