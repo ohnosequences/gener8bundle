@@ -1,16 +1,10 @@
-import ohnosequences.sbt._
-
-Era7.allSettings
+Nice.scalaProject
 
 name := "statika-cli"
 
 organization := "ohnosequences"
 
-scalaVersion := "2.10.3"
-
-scalaBinaryVersion := "2.10.3"
-
-publishMavenStyle := true
+scalaBinaryVersion := scalaVersion.value
 
 bucketSuffix := "era7.com"
 
@@ -22,13 +16,8 @@ libraryDependencies ++= Seq (
 )
 
 scalacOptions ++= Seq(
-  "-deprecation"
-, "-unchecked"
-, "-feature"
-, "-language:reflectiveCalls"
-, "-language:implicitConversions"
+  "-language:reflectiveCalls"
 , "-language:existentials"
-, "-language:postfixOps"
 )
 
 // sbt-buildinfo settings

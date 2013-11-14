@@ -178,6 +178,7 @@ object App {
           "-b" +: config.generate.branch() +:
           bd.toSeq
 
+        // FIXME: don't use ugly giter8
         val g8cmd = "g8" +: g8args
 
         println(g8cmd.mkString("\n  "))
