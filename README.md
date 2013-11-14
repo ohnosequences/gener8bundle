@@ -87,6 +87,7 @@ Assuming, that you have the bundle and the distribution containing it released, 
 
 * Distribution fat-jar (i.e. which contains all it's dependencies) file;
 * Bundle and distribution fully-qualified object names (how to you refer to them in the scala code);
+> @marina-manrique: where and how I get these fully qualified names?
 * Credentials for launching an instance.
 
 Now, let's take for example an existing bundle and see how we can apply it. So the object names are
@@ -111,9 +112,13 @@ aws s3 cp <this url> dist.jar
 
 Now, let's assume that you have this fat jar saved in the `dist.jar` local file.
 
-> Alternatively, check out distribution's [github releases page](https://github.com/ohnosequences/statika-distributions/releases/v0.7.0) — it may also contain this jar attached to the release, so that you don't need to search for it's address.
+> @marina-manrique: It's not clear to me where or how I can get this fat jar, in this example it's clear because it's written `s3://releases.era7.com/ohnosequences/statika-distributions_2.10/0.7.0/statika-distributions_2.10-0.7.0-fat.jar` but in general it is not. I don't know either how to use this command for getting the metadata ` ohnosequences.statika.distributions.AmazonLinux.metadata.artifactUrl`
+
+> Alternatively, check out distribution's [github releases page](https://github.com/ohnosequences/statika-distributions/releases/v0.7.0) — it may also contain this jar attached to the release, so that you don't need to search for its address.
 
 #### Apply command
+
+> I'm missing the option on applying bundles to spot requests, also the instance storage (this is already discussed with @eparejatobes)
 
 The last thing that we need is a file of format
 
@@ -152,7 +157,7 @@ and run
 statika @apply-velvet.opts
 ```
 
-This way is more convenient, because this `opts` file is reusable and you can prepare such files for every bundle you apply oftenly.
+This way is more convenient, because this `opts` file is reusable and you can prepare such files for every bundle you apply often.
 
 
 #### Other options
