@@ -20,11 +20,8 @@ scalacOptions ++= Seq(
 , "-language:existentials"
 )
 
-// sbt-buildinfo settings
-
 buildInfoSettings
 
 sourceGenerators in Compile <+= buildInfo
-
 
 seq(conscriptSettings :_*)

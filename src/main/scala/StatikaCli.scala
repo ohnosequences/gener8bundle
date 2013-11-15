@@ -121,6 +121,17 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
       else Left (s"Can't run ${n} instances in the real world")
     }
 
+    val spotPrice = opt[Double](
+          descr = "Set the price if you want to make a spot-request"
+        , default = None
+        )
+    validate (spotPrice) { p =>
+      if (p > 0) Right(Unit)
+      else if (p == 0) Left ("Sorry, but it's not free, put a positive spot price")
+      else Left ("Sorry, can't pay you for running your instances, put a positive spot price")
+    }
+
+
   }
 
 }
@@ -209,18 +220,31 @@ object App {
           , instanceProfileARN = Some(config.apply.profile())
           )
 
-        println(s"""Launching instances:
-          |type:        ${specs.instanceType}
-          |ami:         ${specs.amiId}
-          |keypair:     ${specs.keyName}
-          |profile ARN: ${specs.instanceProfileARN.getOrElse("None")}
-          |""".stripMargin)
+        config.apply.spotPrice.get match {
+          case None => println("Launching instances:")
+          case Some(price) => {
+            println("Requesting spot-instances:")
+            println(s"price:       $$${price}")
+          }
+        }
+        println(s"""type:        ${specs.instanceType}
+                   |ami:         ${specs.amiId}
+                   |keypair:     ${specs.keyName}
+                   |profile ARN: ${specs.instanceProfileARN.getOrElse("None")}
+                   |""".stripMargin)
+
+        val input = readLine("Press enter to continue ")
+        if (input.nonEmpty && input.toLowerCase != "y") return 0 
 
         val ec2 = EC2.create(new File(config.apply.creds()))
-        val instances = ec2.applyAndWait(config.apply.bundle().split("\\.").last, specs) 
-        if (instances.length == config.apply.number()) return 0
-        else return 1
 
+        config.apply.spotPrice.get match {
+          case None => ec2.applyAndWait(config.apply.bundle().split("\\.").last, specs)
+          case Some(price) => ec2.requestSpotInstances(config.apply.number(), price, specs)
+        }
+
+        println("ok!")
+        return 0
       }
 
       case _ => { // a wrong subcommand
