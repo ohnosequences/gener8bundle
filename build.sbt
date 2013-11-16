@@ -2,17 +2,16 @@ Nice.scalaProject
 
 name := "statika-cli"
 
-organization := "ohnosequences"
+description := "A command line tool for statika projects"
 
-scalaBinaryVersion := scalaVersion.value
+organization := "ohnosequences"
 
 bucketSuffix := "era7.com"
 
-
 libraryDependencies ++= Seq (
-  "org.json4s" % "json4s-native_2.10" % "3.1.0"
-, "ohnosequences" % "aws-scala-tools_2.10" % "0.2.3"
-, "org.rogach" % "scallop_2.10" % "0.9.2"
+  "org.json4s" %% "json4s-native" % "3.1.0"
+, "ohnosequences" %% "aws-scala-tools" % "0.2.3"
+, "org.rogach" %% "scallop" % "0.9.2"
 )
 
 scalacOptions ++= Seq(
