@@ -1,39 +1,36 @@
-import ohnosequences.sbt._
-
-Era7.allSettings
+Nice.scalaProject
 
 name := "statika-cli"
 
+description := "A command line tool for statika projects"
+
 organization := "ohnosequences"
-
-scalaVersion := "2.10.3"
-
-publishMavenStyle := true
 
 bucketSuffix := "era7.com"
 
 
 libraryDependencies ++= Seq (
-  "org.json4s" % "json4s-native_2.10" % "3.1.0"
-, "ohnosequences" % "aws-scala-tools_2.10" % "0.2.3"
-, "org.rogach" % "scallop_2.10" % "0.9.2"
+  "org.json4s" %% "json4s-native" % "3.2.5"
+, "ohnosequences" %% "aws-scala-tools" % "0.2.3"
+, "org.rogach" %% "scallop" % "0.9.4"
 )
+
 
 scalacOptions ++= Seq(
-  "-deprecation"
-, "-unchecked"
-, "-feature"
-, "-language:reflectiveCalls"
-, "-language:implicitConversions"
+  "-language:reflectiveCalls"
 , "-language:existentials"
-, "-language:postfixOps"
 )
 
-// sbt-buildinfo settings
+// lint complains too much about scallop config stuff
+scalacOptions ~= { opts => opts.filter(_ != "-Xlint") }
+
+
+// sorry, no docs in code so far (see readme)
+generateDocs := {}
+
 
 buildInfoSettings
 
 sourceGenerators in Compile <+= buildInfo
-
 
 seq(conscriptSettings :_*)
