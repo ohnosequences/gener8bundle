@@ -1,39 +1,19 @@
-import ohnosequences.sbt._
-
-Era7.allSettings
+Nice.scalaProject
 
 name := "statika-cli"
-
 organization := "ohnosequences"
+description := "Command line tools for Statika"
 
-scalaVersion := "2.10.3"
-
+scalaVersion := "2.11.6"
 publishMavenStyle := true
-
 bucketSuffix := "era7.com"
 
-
 libraryDependencies ++= Seq (
-  "org.json4s" % "json4s-native_2.10" % "3.1.0"
-, "ohnosequences" % "aws-scala-tools_2.10" % "0.2.3"
-, "org.rogach" % "scallop_2.10" % "0.9.2"
+  "org.json4s" %% "json4s-native" % "3.2.11",
+  "ohnosequences" %% "aws-scala-tools" % "0.12.0",
+  "org.rogach" %% "scallop" % "0.9.5"
 )
 
-scalacOptions ++= Seq(
-  "-deprecation"
-, "-unchecked"
-, "-feature"
-, "-language:reflectiveCalls"
-, "-language:implicitConversions"
-, "-language:existentials"
-, "-language:postfixOps"
-)
-
-// sbt-buildinfo settings
-
-buildInfoSettings
-
-sourceGenerators in Compile <+= buildInfo
-
-
-seq(conscriptSettings :_*)
+enablePlugins(BuildInfoPlugin)
+buildInfoKeys := Seq[BuildInfoKey](name, version)
+// buildInfoPackage := "buildinfo"
