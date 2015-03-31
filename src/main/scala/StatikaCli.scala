@@ -13,51 +13,6 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   version(s"${BuildInfo.name} ${BuildInfo.version}")
 
-  val json = new Subcommand("json") {
-
-    val organization = opt[String](
-          default = Some("ohnosequences")
-        , descr = "Organization for the bundle"
-        )
-
-    val name = trailArg[String](
-          descr = "Creates json config file with given name prefilled with default values"
-        )
-    validate (name) { n =>
-        val file = new File(n.stripSuffix(".json")+".json")
-        if (file.exists) Left(s"File ${n}.json already exists")
-        else Right(Unit)
-    }
-
-  }
-
-  val generate = new Subcommand("generate") {
-
-    val template = opt[String](
-          default = Some("ohnosequences/statika-bundle")
-        , descr = "Bundle giter8 template from GitHub in the format <org/repo[/version]>"
-        )
-    validate (template) { t =>
-      val parts = t.split("/").length
-      if(parts == 2 || parts == 3) Right(Unit)
-      else Left(s"Wrong format: '${t}'. Should be <org/repo[/version]>")
-    }
-
-    val branch = opt[String](
-          default = Some("master")
-        , descr = "Branch of the giter8 template"
-        )
-
-    val jsonFile = trailArg[String](
-          descr = "Bundle configuration file(s) in JSON format"
-        )
-    validate (jsonFile) { f =>
-        if (new File(f).exists) Right(Unit)
-        else Left(s"File ${f} doesn't exists")
-    }
-
-  }
-
   val apply = new Subcommand("apply") {
 
     mainOptions = Seq(jar, bundle, dist, creds)
@@ -121,7 +76,6 @@ object App {
 
   import ohnosequences.awstools.ec2._
   import StatikaEC2._
-  import BundleDescription._
 
   def main(args: Array[String]) {
 
@@ -129,47 +83,9 @@ object App {
 
     config.subcommand match {
 
-      case Some(config.json) => { // generating prefilled json conf
-
-        val jname = config.json.name() stripSuffix ".json"
-
-        import org.json4s.native.Serialization
-        import org.json4s.native.Serialization.write
-        implicit val formats = Serialization.formats(NoTypeHints)
-
-        val o = config.json.organization()
-        val json = write(DescriptionFormat(BundleEntity(o, jname, "0.1.0-SNAPSHOT")))
-        val text = pretty(render(parse(json)))
-
-        Seq("echo", text) #> new File(jname+".json") !
-
-      }
-
-      case Some(config.generate) => { // constructing giter8 command to create a bundle
-
-        implicit val formats = DefaultFormats
-        // reading file
-        val j = Source.fromFile(config.generate.jsonFile()).mkString
-        // parsing it
-        val jsonConf = parse(j)
-        val bd = jsonConf.extract[DescriptionFormat]
-
-        val g8args: Seq[String] =
-          config.generate.template() +: 
-          "-b" +: config.generate.branch() +:
-          bd.toSeq
-
-        val g8cmd = "g8" +: g8args
-
-        println(g8cmd.mkString("\n  "))
-
-        g8cmd.!
-
-      }
-
       case Some(config.apply) => { // applying bundle to an instance
 
-        def interpret(cmd: String): String = 
+        def interpret(cmd: String): String =
           Seq("scala", "-cp", config.apply.jar(), "-e", cmd).!!
 
         val userscript = interpret(
@@ -197,7 +113,7 @@ object App {
           |""".stripMargin)
 
         val ec2 = EC2.create(new File(config.apply.creds()))
-        val instances = ec2.applyAndWait(config.apply.bundle().split("\\.").last, specs) 
+        val instances = ec2.applyAndWait(config.apply.bundle().split("\\.").last, specs)
         if (instances.length == config.apply.number()) System.exit(0)
         else System.exit(1)
 
@@ -209,7 +125,7 @@ object App {
       }
 
     }
-    
+
   }
 
 }
