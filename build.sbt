@@ -5,15 +5,13 @@ organization := "ohnosequences"
 description := "Command line tools for Statika"
 
 scalaVersion := "2.11.6"
-publishMavenStyle := true
+//publishMavenStyle := true
 bucketSuffix := "era7.com"
 
 libraryDependencies ++= Seq (
-  "org.json4s" %% "json4s-native" % "3.2.11",
   "ohnosequences" %% "aws-scala-tools" % "0.12.0",
   "org.rogach" %% "scallop" % "0.9.5"
 )
 
 enablePlugins(BuildInfoPlugin)
 buildInfoKeys := Seq[BuildInfoKey](name, version)
-// buildInfoPackage := "buildinfo"

@@ -71,9 +71,6 @@ case class AppConf(arguments: Seq[String]) extends ScallopConf(arguments) {
 
 object App {
 
-  import org.json4s._
-  import org.json4s.native.JsonMethods._
-
   import ohnosequences.awstools.ec2._
   import StatikaEC2._
 
